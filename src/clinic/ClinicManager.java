@@ -14,13 +14,13 @@ public class ClinicManager {
      */
     public void run(){
         Scanner CommandScanner = new Scanner(System.in);
-        System.out.println("Scheduler is running.");
+        System.out.println("Clinic Manager is running.");
         while(programRunning){
             readCommand(CommandScanner.nextLine());
         }
 
         CommandScanner.close();
-        System.out.println("Scheduler is terminated.");
+        System.out.println("Clinic Manager terminated.");
     }
 
     /**
