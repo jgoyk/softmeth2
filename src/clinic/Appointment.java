@@ -1,5 +1,5 @@
 package clinic;
-
+import util.Date;
 /**
  * Represents an appointment in a clinic system, storing information such as 
  * the date, timeslot, patient profile, and provider information.

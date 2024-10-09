@@ -1,5 +1,5 @@
 package clinic;
-
+import util.Date;
 /**
  * Represents an imaging appointment that extends the Appointment class.
  * Includes additional details specific to imaging services, such as the type of imaging room.

@@ -38,8 +38,8 @@ public class List<E>  {
 //    public E get(int index) {} //return the object at the index
 //    public void set(int index, E e) {} //put object e at the index
 //    public int indexOf(E e) {} //return the index of the object or return -1
-    private class ListIterator<E> implements Iterator<E> {
-        public boolean hasNext(){}//return false if it’s empty or end of list
-        public E next(){} //return the next object in the list
-    }
+//    private class ListIterator<E> implements Iterator<E> {
+//        public boolean hasNext(){}//return false if it’s empty or end of list
+//        public E next(){} //return the next object in the list
+//    }
 }
