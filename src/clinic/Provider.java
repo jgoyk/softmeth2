@@ -10,4 +10,13 @@ abstract class Provider extends Person{
         super();  // Calls the default constructor of Person (initializes profile as null)
         location = null;
     }
+
+    public Provider(Profile profile, Location location) {
+        super(profile);  // Calls the default constructor of Person (initializes profile as null)
+        this.location = location;
+    }
+
+
+
+
 }
