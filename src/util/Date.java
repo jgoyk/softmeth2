@@ -1,12 +1,12 @@
 package util;
 
 /**
-        * Represents a date with year, month, and day, and includes methods for
-        * validating the date, checking for leap years, and comparing dates.
-        *
-        * This class also provides constants for leap year and month length calculations.
-        *
-        * @author Joshua Goykhman (Netid: jg1986)
+ * Represents a date with year, month, and day, and includes methods for
+ * validating the date, checking for leap years, and comparing dates.
+ *
+ * This class also provides constants for leap year and month length calculations.
+ *
+ * @author Joshua Goykhman (Netid: jg1986)
  */
 public class Date implements Comparable<Date> {
     // Constants for leap year and month length calculations
@@ -33,46 +33,61 @@ public class Date implements Comparable<Date> {
      * Default constructor that initializes the date fields to invalid values (-1).
      */
     public Date() {
-        year = -1;
-        month = -1;
-        day = -1;
+        this.year = -1;
+        this.month = -1;
+        this.day = -1;
     }
 
     /**
      * Constructs a date with the specified month, day, and year.
-     *
+     * 
      * @param month The month of the date.
-     * @param day   The day of the date.
-     * @param year  The year of the date.
+     * @param day The day of the date.
+     * @param year The year of the date.
+     * @throws IllegalArgumentException if the date is invalid.
      */
     public Date(int month, int day, int year) {
+        if (!isDayValid(month, day, year)) {
+            throw new IllegalArgumentException("Invalid date.");
+        }
         this.year = year;
         this.month = month;
         this.day = day;
     }
 
     /**
-     * Constructs a Date object with a string that is a date in the format "MM/DD/YYYY".
+     * Constructs a Date object with a string in the format "MM/DD/YYYY".
      *
-     * @param dateString A string that is a date in the format "MM/DD/YYYY".
+     * @param dateString A string in the format "MM/DD/YYYY".
+     * @throws IllegalArgumentException if the string is not properly formatted or the date is invalid.
      */
     public Date(String dateString) {
-        String[] dateParts = dateString.split("/");
-        this.month = Integer.parseInt(dateParts[DATE_MONTH_INDEX]);
-        this.day = Integer.parseInt(dateParts[DATE_DAY_INDEX]);
-        this.year = Integer.parseInt(dateParts[DATE_YEAR_INDEX]);
+        try {
+            String[] dateParts = dateString.split("/");
+            if (dateParts.length != 3) {
+                throw new IllegalArgumentException("Invalid date format. Expected MM/DD/YYYY.");
+            }
+            this.month = Integer.parseInt(dateParts[DATE_MONTH_INDEX]);
+            this.day = Integer.parseInt(dateParts[DATE_DAY_INDEX]);
+            this.year = Integer.parseInt(dateParts[DATE_YEAR_INDEX]);
+            if (!isDayValid(month, day, year)) {
+                throw new IllegalArgumentException("Invalid date.");
+            }
+        } catch (NumberFormatException e) {
+            throw new IllegalArgumentException("Invalid date format. Expected numeric values in MM/DD/YYYY.");
+        }
     }
 
     /**
-     * Copy constructor that creates a new date object by copying the values from
-     * another date object.
+     * Copy constructor that creates a new Date object by copying the values from
+     * another Date object.
      *
-     * @param date The date to copy.
+     * @param date The Date object to copy.
      */
     public Date(Date date) {
-        this.day = date.day;
-        this.month = date.month;
         this.year = date.year;
+        this.month = date.month;
+        this.day = date.day;
     }
 
     /**
@@ -81,9 +96,6 @@ public class Date implements Comparable<Date> {
      * @return true if the date is valid, false otherwise.
      */
     public boolean isValid() {
-        if (month < 1 || month > 12) {
-            return false;
-        }
         return isDayValid(month, day, year);
     }
 
@@ -114,28 +126,20 @@ public class Date implements Comparable<Date> {
         return year;
     }
 
-
     /**
      * Validates the day of the month for the given month and year.
      *
      * @param month The month to check.
-     * @param days  The day to check.
-     * @param year  The year to check.
+     * @param day The day to check.
+     * @param year The year to check.
      * @return true if the day is valid for the given month and year, false otherwise.
      */
-    private boolean isDayValid(int month, int days, int year) {
-        int lastDay = LAST_DAY_NORMAL_MONTH_SMALL;
-
-        if (year <= 1900 || month < 1 || month > 12) {
+    private boolean isDayValid(int month, int day, int year) {
+        if (year < 1 || month < 1 || month > 12) {
             return false;
         }
-
-        if (month == 2) {
-            lastDay = isLeapYear(year) ? LAST_DAY_FEB_LEAP_YEAR : LAST_DAY_FEB_NOT_LEAP_YEAR;
-        } else if (isBigMonth(month)) {
-            lastDay = LAST_DAY_NORMAL_MONTH_BIG;
-        }
-
+        int lastDay = (month == 2) ? (isLeapYear(year) ? LAST_DAY_FEB_LEAP_YEAR : LAST_DAY_FEB_NOT_LEAP_YEAR)
+                                    : (isBigMonth(month) ? LAST_DAY_NORMAL_MONTH_BIG : LAST_DAY_NORMAL_MONTH_SMALL);
         return day > 0 && day <= lastDay;
     }
 
@@ -146,8 +150,8 @@ public class Date implements Comparable<Date> {
      * @return true if the month has 31 days, false otherwise.
      */
     private boolean isBigMonth(int month) {
-        for (int m : BIG_MONTHS) {
-            if (month == m) {
+        for (int bigMonth : BIG_MONTHS) {
+            if (month == bigMonth) {
                 return true;
             }
         }
@@ -161,7 +165,6 @@ public class Date implements Comparable<Date> {
      * @return true if the year is a leap year, false otherwise.
      */
     private boolean isLeapYear(int year) {
-
         return (year % QUADRENNIAL == 0 && year % CENTENNIAL != 0) || (year % QUATERCENTENNIAL == 0);
     }
 
@@ -169,18 +172,17 @@ public class Date implements Comparable<Date> {
      * Compares this date to another date object.
      *
      * @param targetDate The date to compare against.
-     * @return 0 if the dates are equal, 1 if this date is later, and -1 if this date
-     * is earlier.
+     * @return 0 if the dates are equal, 1 if this date is later, and -1 if this date is earlier.
      */
     @Override
     public int compareTo(Date targetDate) {
         if (year != targetDate.year) {
-            return year > targetDate.year ? 1 : -1;
+            return Integer.compare(this.year, targetDate.year);
         }
         if (month != targetDate.month) {
-            return month > targetDate.month ? 1 : -1;
+            return Integer.compare(this.month, targetDate.month);
         }
-        return Integer.compare(day, targetDate.day);
+        return Integer.compare(this.day, targetDate.day);
     }
 
     /**
@@ -193,7 +195,6 @@ public class Date implements Comparable<Date> {
         return month + "/" + day + "/" + year;
     }
 
-
     /**
      * Checks if this date is equal to another date object based on their day,
      * month, and year.
@@ -203,11 +204,23 @@ public class Date implements Comparable<Date> {
      */
     @Override
     public boolean equals(Object other) {
-        Date TargetData = (Date) other;
-        if (this.month == TargetData.month && this.day == TargetData.day && this.year == TargetData.year) {
+        if (this == other) {
             return true;
         }
-        return false;
+        if (other == null || getClass() != other.getClass()) {
+            return false;
+        }
+        Date targetDate = (Date) other;
+        return this.year == targetDate.year && this.month == targetDate.month && this.day == targetDate.day;
     }
 
+    /**
+     * Generates a hash code for this Date object.
+     *
+     * @return The hash code of the date.
+     */
+    @Override
+    public int hashCode() {
+        return Objects.hash(year, month, day);
+    }
 }
