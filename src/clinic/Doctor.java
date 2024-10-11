@@ -17,9 +17,15 @@ public class Doctor extends Provider{
         this.npi = npi;
     }
 
+    public String getNpi(){return npi;}
 
     @Override
     public int rate() {
         return specialty.getCharge();
+    }
+
+    @Override
+    public String toString() {
+        return (super.toString() + "[" + specialty.name() + ", #" + npi + "]");
     }
 }

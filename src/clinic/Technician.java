@@ -19,4 +19,9 @@ public class Technician extends Provider {
     public int rate() {
         return ratePerVisit;
     }
+
+    @Override
+    public String toString() {
+        return (super.toString() + "[ rate: $" + ratePerVisit + ".00]");
+    }
 }

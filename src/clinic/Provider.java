@@ -16,6 +16,11 @@ abstract class Provider extends Person{
         this.location = location;
     }
 
+    @Override
+    public String toString(){
+        return ("[" + super.toString() + ", " + location.name() + ", " + location.getCounty() + " " + location.getZip() + "]");
+    }
+
 
 
 

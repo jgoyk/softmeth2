@@ -34,6 +34,21 @@ public class Timeslot implements Comparable<Timeslot> {
         this.minute = minute;
     }
 
+    public Timeslot(int timeslotValue) {
+        if(timeslotValue > 6){
+            this.hour = (timeslotValue-5) / 2 + 13;
+            this.minute = (timeslotValue+1) % 2 * 30;
+        } else if (timeslotValue > 0) {
+            this.hour = (timeslotValue-1) / 2 + 9;
+            this.minute = (timeslotValue+1) % 2 * 30;
+        } else{
+            this.hour = -1;
+            this.minute = -1;
+        }
+
+    }
+
+
     /**
      * Gets the hour of the time slot.
      *
