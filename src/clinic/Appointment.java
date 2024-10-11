@@ -140,6 +140,7 @@ public class Appointment implements Comparable<Appointment> {
      */
     @Override
     public int hashCode() {
-        return Objects.hash(date, timeslot, patient, provider);
+        return 0;
+        //return Objects.hash(date, timeslot, patient, provider);
     }
 }

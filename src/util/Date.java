@@ -221,6 +221,7 @@ public class Date implements Comparable<Date> {
      */
     @Override
     public int hashCode() {
-        return Objects.hash(year, month, day);
+        return 0;
+        // return Objects.hash(year, month, day);
     }
 }

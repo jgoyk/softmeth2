@@ -3,47 +3,61 @@ package clinic;
 import java.util.Calendar;
 import java.util.Scanner;
 import util.Date;
+import java.io.File;
+import util.List;
 
 public class ClinicManager {
-    public static boolean programRunning = true;
+    private static boolean programRunning = true;
 
-    public static final int INDEX_COMMAND = 0;
-    public static final int INDEX_APPOINTMENT_DATE = 1;
-    public static final int INDEX_TIMESLOT = 2;
-    public static final int INDEX_FIRST_NAME = 3;
-    public static final int INDEX_LAST_NAME = 4;
-    public static final int INDEX_DATE_OF_BIRTH = 5;
-    public static final int INDEX_NPI_OR_IMAGING_TYPE = 6;
-    public static final int INDEX_NEWTIMESLOT = 6;
-    public static final int D_OR_T_COMMAND_LENGTH = 7;
-    public static final int D_COMMAND_VALUE = 0;
-    public static final int T_COMMAND_VALUE = 1;
-    public static final int VALID_C_COMMAND_LENGTH = 6;
+    private static final int INDEX_COMMAND = 0;
+    private static final int INDEX_APPOINTMENT_DATE = 1;
+    private static final int INDEX_TIMESLOT = 2;
+    private static final int INDEX_FIRST_NAME = 3;
+    private static final int INDEX_LAST_NAME = 4;
+    private static final int INDEX_DATE_OF_BIRTH = 5;
+    private static final int INDEX_NPI_OR_IMAGING_TYPE = 6;
+    private static final int INDEX_NEWTIMESLOT = 6;
+    private static final int D_OR_T_COMMAND_LENGTH = 7;
+    private static final int VALID_C_COMMAND_LENGTH = 6;
 
-    public static final int MIN_TIMESLOT_INDEX = 1;
-    public static final int MAX_TIMESLOT_INDEX = 6;
+    private static final int DOCTOR_COMMAND_LENGTH = 7;
+    private static final int TECHNICIAN_COMMAND_LENGTH = 6;
+    private static final int PROVIDER_FIRST_NAME_INDEX = 1;
+    private static final int PROVIDER_LAST_NAME_INDEX = 2;
+    private static final int PROVIDER_DOB_INDEX = 3;
+    private static final int PROVIDER_LOCATION_INDEX = 4;
+    private static final int DOCTOR_SPECIALTY_INDEX = 5;
+    private static final int TECHNICIAN_RATE_INDEX = 5;
+    private static final int DOCTOR_NPI_INDEX = 6;
 
-    public static final String[] OUTPUT_HEADER_ARRAY = {"** Appointments ordered by date/time/provider **", "** Appointments ordered by patient/date/time **", "** Appointments ordered by county/date/time **"};
-    public static final int PRINT_APPOINTMENT_VALUE = 0;
-    public static final int PRINT_PATIENT_VALUE = 1;
-    public static final int PRINT_LOCATION_VALUE = 2;
+    private static final int MIN_TIMESLOT_INDEX = 1;
+    private static final int MAX_TIMESLOT_INDEX = 6;
 
-    public static final int DATE_IS_TODAY = 0;
-    public static final int DATE_BEFORE_TODAY = -1;
-    public static final int DATE_IS_VALID = 1;
-    public static final int DATE_NOT_WITHIN_SIX_MONTHS = 2;
+    private static final String[] OUTPUT_HEADER_ARRAY = {"** Appointments ordered by date/time/provider **", "** Appointments ordered by patient/date/time **", "** Appointments ordered by county/date/time **"};
+    private static final int PRINT_APPOINTMENT_VALUE = 0;
+    private static final int PRINT_PATIENT_VALUE = 1;
+    private static final int PRINT_LOCATION_VALUE = 2;
 
-    public static final int DATE_INDEX_MONTH = 0;
-    public static final int DATE_INDEX_DAY = 1;
-    public static final int DATE_INDEX_YEAR = 2;
+    private static final int DATE_IS_TODAY = 0;
+    private static final int DATE_BEFORE_TODAY = -1;
+    private static final int DATE_IS_VALID = 1;
+    private static final int DATE_NOT_WITHIN_SIX_MONTHS = 2;
 
-    public static final int CALENDAR_OFFSET = 1;
-    public static final int NO_OFFSET_VALUE = 0;
-    public static final int SIX_MONTH_OFFSET = 6;
-    public static final int MONTH_INDEX_OFFSET = 1;
+    private static final int DATE_INDEX_MONTH = 0;
+    private static final int DATE_INDEX_DAY = 1;
+    private static final int DATE_INDEX_YEAR = 2;
 
-    public static final int BOOKED_VALUE = 1;
-    public static final int RESCHEDULE_VALUE = 2;
+    private static final int CALENDAR_OFFSET = 1;
+    private static final int NO_OFFSET_VALUE = 0;
+    private static final int SIX_MONTH_OFFSET = 6;
+    private static final int MONTH_INDEX_OFFSET = 1;
+
+    private static final int BOOKED_VALUE = 1;
+    private static final int RESCHEDULE_VALUE = 2;
+
+    private static List<Provider> providerList = new List<Provider>();
+    private static List<Technician> technicianList = new List<Technician>();
+    private static final boolean PROVIDERS_LOADED = false;
 
 
     /**
@@ -51,13 +65,18 @@ public class ClinicManager {
      *   Prints when scheduler starts and stops running
      */
     public void run(){
-        Scanner CommandScanner = new Scanner(System.in);
+        Scanner commandScanner = new Scanner(System.in);
+
+
         System.out.println("Clinic Manager is running.");
+
+        readProviderFile();
+
         while(programRunning){
-            readCommand(CommandScanner.nextLine());
+            readCommand(commandScanner.nextLine());
         }
 
-        CommandScanner.close();
+        commandScanner.close();
         System.out.println("Clinic Manager terminated.");
     }
 
@@ -117,13 +136,107 @@ public class ClinicManager {
                 break;
         }
     }
+
+    private void readProviderFile(){
+        try {
+            File providerFile = new File("./src/providers.txt");
+            Scanner fileScanner = new Scanner(providerFile);
+            while(fileScanner.hasNextLine()){
+                String commandArray = fileScanner.nextLine();
+                providerCreator(commandArray);
+            }
+        } catch (Exception e) {
+            System.out.println(e);
+            return;
+        }
+        System.out.println("Rotation list for the technicians.");
+        for(int i = technicianList.size()-1; i >= 0 ; i--){
+            System.out.print(technicianList.get(i).toString());
+            if (i != 0){
+                System.out.print(" --> ");
+            }
+        }
+
+    }
+
+    private void providerCreator(String inputLine){
+        if(inputLine.isEmpty()){
+            return;
+        }
+        String[] inputList = inputLine.split("  ");
+        switch (inputList[INDEX_COMMAND]) {
+            case "D": //Create new doctor
+                doctorCreator(inputList);
+                break;
+            case "T": //Create new technician
+                technicianCreator(inputList);
+                break;
+            default: // Command not recognized
+                System.out.println("Invalid command!");
+                break;
+        }
+
+    }
+
+    private void doctorCreator(String[] commandArray){
+        if (commandArray.length != DOCTOR_COMMAND_LENGTH){
+            return;
+        }
+
+        Date dateOfBirth = new Date(commandArray[PROVIDER_DOB_INDEX]);
+        Profile profile = new Profile(commandArray[PROVIDER_FIRST_NAME_INDEX], commandArray[PROVIDER_LAST_NAME_INDEX], dateOfBirth);
+        String npi = commandArray[DOCTOR_NPI_INDEX];
+        String locationString = commandArray[PROVIDER_LOCATION_INDEX];
+        String specialtyString = commandArray[DOCTOR_SPECIALTY_INDEX];
+        Location providerLocation = null;
+        Specialty doctorSpecialty = null;
+
+        for (Location location : Location.values()) {
+            if(location.name().equals(locationString.toLowerCase().trim())){
+                providerLocation = location;
+            }
+        }
+        for (Specialty specialty : Specialty.values()) {
+            if(specialty.name().equals(specialtyString.toLowerCase().trim())){
+                doctorSpecialty = specialty;
+            }
+        }
+
+        Doctor doctor = new Doctor(profile, providerLocation, npi, doctorSpecialty);
+        providerList.add(doctor);
+    }
+
+    private void technicianCreator(String[] commandArray){
+        if (commandArray.length != TECHNICIAN_COMMAND_LENGTH){
+            return;
+        }
+
+        Date dateOfBirth = new Date(commandArray[PROVIDER_DOB_INDEX]);
+        Profile profile = new Profile(commandArray[PROVIDER_FIRST_NAME_INDEX], commandArray[PROVIDER_LAST_NAME_INDEX], dateOfBirth);
+        int rate = Integer.parseInt(commandArray[TECHNICIAN_RATE_INDEX]);
+        String locationString = commandArray[PROVIDER_LOCATION_INDEX];
+        Location providerLocation = null;
+
+
+        for (Location location : Location.values()) {
+            if(location.name().equals(locationString.toLowerCase().trim())){
+                providerLocation = location;
+            }
+        }
+
+
+        Technician technician = new Technician(profile, providerLocation, rate);
+        providerList.add(technician);
+        technicianList.add(technician);
+    }
+
     /**
      * Creates an appointment based off commandLine input array
      * Returns the new appointment object if successful, null otherwise
      * @param commandArray an array from command line input with data to create appointment
      @return an appointment or null object based on provided commandLine input array
      */
-    Appointment createOfficeAppointment(String[] commandArray){
+    private Appointment createOfficeAppointment(String[] commandArray){
 
         if(commandArray.length != D_OR_T_COMMAND_LENGTH){
             System.out.println("Invalid command!");
