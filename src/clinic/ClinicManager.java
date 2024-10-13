@@ -1,6 +1,7 @@
 package clinic;
 
 import java.util.Calendar;
+import java.util.Iterator;
 import java.util.Scanner;
 
 import util.CircularLinkedList;
@@ -61,6 +62,10 @@ public class ClinicManager {
     private static final int BOOKED_VALUE = 1;
     private static final int RESCHEDULE_VALUE = 2;
 
+    public static final char DATE_TIME_PROVIDER_NAME = 'A'; //Used for PA Command
+    public static final char PATIENT_DATE_TIME = 'P'; // Used for PP and PS commands
+    public static final char COUNTY_DATE_TIME = 'L'; // Used for PL, PO, and PI commands
+
     private static List<Provider> providerList = new List<Provider>();
     private static CircularLinkedList technicianList = new CircularLinkedList();
     private static List<Doctor> doctorList = new List<Doctor>();
@@ -73,12 +78,10 @@ public class ClinicManager {
      */
     public void run(){
         Scanner commandScanner = new Scanner(System.in);
-
-
         System.out.println("Clinic Manager is running.");
 
         readProviderFile();
-        //need to display provider list sorted by provider profile
+
         while(programRunning){
             readCommand(commandScanner.nextLine());
         }
@@ -102,13 +105,16 @@ public class ClinicManager {
                 programRunning = false;
                 break;
             case "D": //Schedule new office appointment
-                Appointment NewAppointment = createOfficeAppointment(inputList);
-                if(NewAppointment != null){
-                    addAppointmentToList(NewAppointment, BOOKED_VALUE);
+                Appointment newOfficeAppointment = createOfficeAppointment(inputList);
+                if(newOfficeAppointment != null){
+                    addAppointmentToList(newOfficeAppointment, BOOKED_VALUE);
                 }
                 break;
             case "T": //Schedule new imaging appointment
-
+                Appointment newImagingAppointment = createTechnicianAppointment(inputList);
+                if(newImagingAppointment != null){
+                    addAppointmentToList(newImagingAppointment, BOOKED_VALUE);
+                }
                 break;
             case "C": //Cancel appointment
 
@@ -254,38 +260,40 @@ public class ClinicManager {
      @return an appointment or null object based on provided commandLine input array
      */
     private Appointment createOfficeAppointment(String[] commandArray){
-
         if(commandArray.length != D_OR_T_COMMAND_LENGTH){
             System.out.println("Missing data tokens.");
             return null;
         }
+
         Date date = null;
         Timeslot slot = null;
         Person patient = null;
         Person provider = null;
-
         try{
             date = new Date(commandArray[INDEX_APPOINTMENT_DATE]);
         }catch(Exception e){
-            System.out.println("Appointment date: " + commandArray[INDEX_APPOINTMENT_DATE] + " is not a valid date.");
+            System.out.println("Appointment date: " + commandArray[INDEX_APPOINTMENT_DATE] + " is not a valid calendar date");
             return null;
         }
-
+        if(!appointmentDateValidator(date)){
+            return null;
+        }
+        patient = profileCreator(commandArray[INDEX_FIRST_NAME], commandArray[INDEX_LAST_NAME], commandArray[INDEX_DATE_OF_BIRTH]);
+        if(patient == null){
+            return null;
+        }
         try{
-            patient = profileCreator(commandArray[INDEX_FIRST_NAME], commandArray[INDEX_LAST_NAME], commandArray[INDEX_DATE_OF_BIRTH]);
-            provider = doctorFinder(commandArray[INDEX_NPI]);
             slot = timeslotCreator(commandArray[INDEX_TIMESLOT]);
+            provider = doctorFinder(commandArray[INDEX_IMAGING_TYPE]);
         }catch(Exception e){
             return null;
         }
-
         if(!date.isValid()){
-            System.out.println("Appointment date: " + commandArray[INDEX_APPOINTMENT_DATE] + " is not a valid date.");
+            System.out.println("Appointment date: " + commandArray[INDEX_APPOINTMENT_DATE] + " is not a valid calendar date");
         }
-        if( slot == null || patient == null || provider == null){
+        if( slot == null || provider == null){
             return null;
         }
-
         return new Appointment(date, slot, patient, provider);
     }
 
@@ -304,40 +312,56 @@ public class ClinicManager {
         Date date = null;
         Timeslot slot = null;
         Person patient = null;
-        Radiology service = null;
         Person provider = null;
-
+        Radiology room = null;
         try{
             date = new Date(commandArray[INDEX_APPOINTMENT_DATE]);
         }catch(Exception e){
-            System.out.println("Appointment date: " + commandArray[INDEX_APPOINTMENT_DATE] + " is not a valid date.");
+            System.out.println("Appointment date: " + commandArray[INDEX_APPOINTMENT_DATE] + " is not a valid calendar date");
             return null;
         }
-
-        try{
-            patient = profileCreator(commandArray[INDEX_FIRST_NAME], commandArray[INDEX_LAST_NAME], commandArray[INDEX_DATE_OF_BIRTH]);
-
-            slot = timeslotCreator(commandArray[INDEX_TIMESLOT]);
-        }catch(Exception e){
+        if(!appointmentDateValidator(date)){
             return null;
         }
-
+        patient = profileCreator(commandArray[INDEX_FIRST_NAME], commandArray[INDEX_LAST_NAME], commandArray[INDEX_DATE_OF_BIRTH]);
+        if(patient == null){
+            return null;
+        }
+        slot = timeslotCreator(commandArray[INDEX_TIMESLOT]);
+        if( slot == null){
+            return null;
+        }
+        room = radiologyCreator(commandArray[INDEX_IMAGING_TYPE]);
+        if( room == null){
+            return null;
+        }
+        if(!imagingAppointmentValid(date,slot, patient)){
+            System.out.println(patient.toString() +" has an existing appointment at the same time slot.");
+            return null;
+        }
+        provider = technicianAssigner(room, slot);
+        if( provider == null){
+            return null;
+        }
         if(!date.isValid()){
-            System.out.println("Appointment date: " + commandArray[INDEX_APPOINTMENT_DATE] + " is not a valid date.");
-        }
-        if( slot == null || patient == null){
-            return null;
+            System.out.println("Appointment date: " + commandArray[INDEX_APPOINTMENT_DATE] + " is not a valid calendar date");
         }
 
-        return new Appointment(date, slot, patient, provider);
+        return new Imaging(date, slot, patient, provider, room);
     }
-    /**
-     Creates a profile object based off inputs
-     If any errors occur they are printed and null is return
-     @param serviceString a string representing patient first name
-     @return Profile object based off input data
-     */
-    private Person technicianAssigner(String serviceString){
+    private boolean imagingAppointmentValid(Date date, Timeslot slot, Person patient){
+        // Check if patient has appointment at that timeslot
+        Iterator<Appointment> iterator = appointmentList.iterator();
+        while (iterator.hasNext()){
+            Appointment apptToCheck = iterator.next();
+            if (apptToCheck.getPatient().equals(patient) && apptToCheck.getTimeslot().equals(slot) && apptToCheck.getDate().equals(date)){
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private Radiology radiologyCreator(String serviceString){
         Radiology room = null;
         for (Radiology service : Radiology.values()) {
             if(service.name().toLowerCase().equals(serviceString.toLowerCase().trim())){
@@ -348,11 +372,48 @@ public class ClinicManager {
             System.out.println(serviceString + " - imaging service not provided.");
             return null;
         }
-
+        return room;
+    }
+    /**
+     Creates a profile object based off inputs
+     If any errors occur they are printed and null is return
+     @param room a string representing patient first name
+     @return Profile object based off input data
+     */
+    private Person technicianAssigner(Radiology room, Timeslot timeslot){
         Person technician = null;
+        Node head = technicianList.getHead();
+        Node ptr = technicianList.getHead();
+        Iterator<Appointment> iterator;
+        boolean found = false;
+        do{
+            iterator = appointmentList.iterator();
+            while (iterator.hasNext()){
+                Appointment apptToCheck = iterator.next();
+                if (apptToCheck instanceof Imaging){
+                    Imaging imagingAppt = (Imaging)(apptToCheck);
+                    Technician currTechnician = (Technician)(imagingAppt.getProvider());
+                    if (imagingAppt.getTimeslot().equals(timeslot)){
+                        if (currTechnician.getLocation().equals(ptr.getTechnician().getLocation()) && imagingAppt.getRoom().equals(room)){
+                            found = true;
+                        } else if (currTechnician.getProfile().equals(ptr.getTechnician().getProfile())){
+                            found = true;
+                        }
+                    }
 
+                }
+            }
+            if (found){
+                found = false;
+                ptr = ptr.getNext();
+            } else {
+                technicianList.setHead(ptr.getNext());
+                return ptr.getTechnician();
+            }
+        } while(ptr != head);
+        System.out.println("Cannot find an available technician at all locations for " + room.name() + " at slot "+ timeslot.getTimeslotInt() +".");
+        return null;
 
-        return technician;
     }
 
 
@@ -369,14 +430,13 @@ public class ClinicManager {
         date = new Date(dateOfBirthString);
 
         if(date == null || !date.isValid()){
-            System.out.println("Patient dob: " + dateOfBirthString + " is not a valid calendar date.");
+            System.out.println("Patient dob: " + dateOfBirthString + " is not a valid calendar date");
             return null;
         }
         if(checkDateValid(date) > 0){
             System.out.println("Patient dob: " + dateOfBirthString + " is today or a date after today.");
             return null;
         }
-
         Profile profile;
         Person person;
         try{
@@ -478,8 +538,16 @@ public class ClinicManager {
      * @return a true or false boolean value depending on if the appointment was successfully added to list
      */
     boolean addAppointmentToList(Appointment appointment, int statusValue){
-
-        if(appointmentValidator(appointment)){
+        if(appointment instanceof Imaging){
+            appointmentList.add(appointment);
+            if (statusValue == BOOKED_VALUE){
+                System.out.println(appointment.toString() + " booked.");
+            } else {
+                System.out.println( "Rescheduled to " + appointment.toString());
+            }
+            return true; //Appointment was successfully added to list
+        }
+        if (appointmentValidator(appointment)){
             appointmentList.add(appointment);
             if (statusValue == BOOKED_VALUE){
                 System.out.println(appointment.toString() + " booked.");
@@ -499,53 +567,68 @@ public class ClinicManager {
      * @return a boolean value based on if the appointment is valid or not
      */
     private boolean appointmentValidator(Appointment appointment){
+
         // Check if patient is available
         if(appointmentList.contains(appointment)){
             System.out.println(appointment.getPatient().toString()+" has an existing appointment at the same time slot.");
             return false;
         }
-        // Check if timeslot is available
-//        if(appointmentList.getAppointmentByProvider(appointment.getDate(), appointment.getTimeslot(), appointment.getProvider()) != null){
-//            System.out.println(appointment.getProvider().getString_ProviderInfo() + " is not available at slot " + appointment.getTimeslot().toString().replaceAll("\\D+", "")+".");
-//            return false;
-//        }
-        // Check if appointment date is valid
-        return appointmentDateValidator(appointment);
+
+        // Check if timeslot is available and Check if patient has appointment at that timeslot
+        Iterator<Appointment> iterator = appointmentList.iterator();
+        while (iterator.hasNext()){
+            Appointment apptToCheck = iterator.next();
+            if (apptToCheck.getProvider().equals(appointment.getProvider()) && apptToCheck.getTimeslot().equals(appointment.getTimeslot())){
+                if(appointment.getProvider() instanceof Technician){
+                    Technician apptTechnician = (Technician)(appointment.getProvider());
+                    System.out.println(apptTechnician.toString()+ " is not available at slot " + appointment.getTimeslot().getTimeslotInt());
+                } else {
+                    Doctor apptTechnician = (Doctor)(appointment.getProvider());
+                    System.out.println(apptTechnician.toString()+ " is not available at slot " + appointment.getTimeslot().getTimeslotInt());
+                }
+                return false;
+            }
+            if (apptToCheck.getPatient().equals(appointment.getPatient()) && apptToCheck.getTimeslot().equals(appointment.getTimeslot())){
+                System.out.println(appointment.getPatient().toString() + " has an existing appointment at the same time slot.");
+                return false;
+            }
+        }
+        return true;
     }
 
     /**
      * Checks if appointment object date is valid, not today or before today, is within six months, and is not a weekend
      * Prints any errors and returns true if successful, false otherwise
-     * @param appointment An appointment object to be checked for date validity
+     * @param date A date object to be checked for date validity
      * @return a boolean value based on if the appointment date is a valid appointment date
      */
-    private boolean appointmentDateValidator(Appointment appointment){
+    private boolean appointmentDateValidator(Date date){
         //Check appointment date is valid calendar date
-        if(!appointment.getDate().isValid()){
-            System.out.println("Appointment date: " + appointment.getDate().toString() + " is not a valid calendar date.");
+        if(!date.isValid()){
+            System.out.println("Appointment date: " + date.toString() + " is not a valid calendar date");
             return false;
         }
         //Check if appointment date is today
-        if(checkDateValid(appointment.getDate()) <= DATE_IS_TODAY){
-            System.out.println("Appointment date: " + appointment.getDate().toString() + " is today or a date before today.");
+        if(checkDateValid(date) <= DATE_IS_TODAY){
+            System.out.println("Appointment date: " + date.toString() + " is today or a date before today.");
             return false;
         }
         //Check if appointment date is within 6 months
-        if(checkDateValid(appointment.getDate()) == DATE_NOT_WITHIN_SIX_MONTHS){
-            System.out.println("Appointment date: " + appointment.getDate().toString() + " is not within six months.");
+        if(checkDateValid(date) == DATE_NOT_WITHIN_SIX_MONTHS){
+            System.out.println("Appointment date: " + date.toString() + " is not within six months.");
             return false;
         }
         //Check if appointment date is a weekend
         Calendar appointmentCalendar = Calendar.getInstance();
         try{
-            appointmentCalendar.set(appointment.getDate().getYear(), appointment.getDate().getMonth() - CALENDAR_OFFSET, appointment.getDate().getDay());
+            appointmentCalendar.set(date.getYear(), date.getMonth() - CALENDAR_OFFSET, date.getDay());
         }catch(Exception e){
             System.out.println("Date can not be convert to Calendar object");
             return false;
         }
         int day = appointmentCalendar.get(Calendar.DAY_OF_WEEK);
         if(day == Calendar.SATURDAY || day == Calendar.SUNDAY){
-            System.out.println("Appointment date: " + appointment.getDate().toString() + " is Saturday or Sunday.");
+            System.out.println("Appointment date: " + date.toString() + " is Saturday or Sunday.");
             return false;
         }
         return true;

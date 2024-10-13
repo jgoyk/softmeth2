@@ -60,7 +60,7 @@ public class Imaging extends Appointment {
      */
     @Override
     public String toString() {
-        return super.toString() + " " + room.toString();
+        return super.toString() + "[" + room.name() +"]";
     }
 
     /**

@@ -90,6 +90,22 @@ public class Timeslot implements Comparable<Timeslot> {
         return String.format("%d:%02d %s", displayHour, minute, period);
     }
 
+    public int getTimeslotInt(){
+        int timeslotValue;
+
+        if (hour >= 13) {
+            timeslotValue = (hour - 13) * 2 + 5;
+        } else if (hour >= 9) {
+            timeslotValue = (hour - 9) * 2 + 1;
+        } else {
+            return -1;
+        }
+        if (minute >= 30) {
+            timeslotValue += 1;
+        }
+        return timeslotValue;
+    }
+
     /**
      * Compares this time slot with another time slot based on hour and minute.
      *

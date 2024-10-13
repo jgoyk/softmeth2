@@ -15,6 +15,9 @@ public class CircularLinkedList {
     public int getSize(){
         return size;
     }
+    public void setHead(Node head){
+        this.head = head;
+    }
     public Node getHead(){
         return head;
     }

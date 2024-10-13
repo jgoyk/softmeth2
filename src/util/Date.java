@@ -70,9 +70,6 @@ public class Date implements Comparable<Date> {
             this.month = Integer.parseInt(dateParts[DATE_MONTH_INDEX]);
             this.day = Integer.parseInt(dateParts[DATE_DAY_INDEX]);
             this.year = Integer.parseInt(dateParts[DATE_YEAR_INDEX]);
-            if (!isDayValid(month, day, year)) {
-                throw new IllegalArgumentException("Invalid date.");
-            }
         } catch (NumberFormatException e) {
             throw new IllegalArgumentException("Invalid date format. Expected numeric values in MM/DD/YYYY.");
         }
