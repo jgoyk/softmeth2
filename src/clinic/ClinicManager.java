@@ -9,6 +9,8 @@ import util.Date;
 import java.io.File;
 import util.List;
 import util.Node;
+import util.Sort;
+
 import static util.Sort.appointment;
 import static util.Sort.provider;
 
@@ -123,13 +125,25 @@ public class ClinicManager {
 
                 break;
             case "PA": // Print appointment list sorted by appointment date, time, then provider’s name.
-
+                Sort.appointment(appointmentList, DATE_TIME_PROVIDER_NAME);
+                System.out.println(OUTPUT_HEADER_ARRAY[PRINT_APPOINTMENT_VALUE]);
+                for (int i = 0; i < appointmentList.size(); i++) {
+                    System.out.println(appointmentList.get(i).toString());
+                }
                 break;
             case "PP":// Print appointment list sorted by the patient (by last name, first name, date of birth, then appointment date and time).
-
+                Sort.appointment(appointmentList, PATIENT_DATE_TIME);
+                System.out.println(OUTPUT_HEADER_ARRAY[PRINT_PATIENT_VALUE]);
+                for (int i = 0; i < appointmentList.size(); i++) {
+                    System.out.println(appointmentList.get(i).toString());
+                }
                 break;
             case "PL": // Print appointment list sorted by the county name, then the appointment date and time.
-
+                Sort.appointment(appointmentList, COUNTY_DATE_TIME);
+                System.out.println(OUTPUT_HEADER_ARRAY[PRINT_LOCATION_VALUE]);
+                for (int i = 0; i < appointmentList.size(); i++) {
+                    System.out.println(appointmentList.get(i).toString());
+                }
                 break;
             case "PS": // Print billing statements of all patients
 
