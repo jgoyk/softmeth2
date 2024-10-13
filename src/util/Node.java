@@ -11,4 +11,10 @@ public class Node {
         this.data = data;
         this.next = null;
     }
+    public Technician getTechnician(){
+        return data;
+    }
+    public Node getNext(){
+        return next;
+    }
 }

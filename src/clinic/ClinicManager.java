@@ -2,9 +2,14 @@ package clinic;
 
 import java.util.Calendar;
 import java.util.Scanner;
+
+import util.CircularLinkedList;
 import util.Date;
 import java.io.File;
 import util.List;
+import util.Node;
+import static util.Sort.appointment;
+import static util.Sort.provider;
 
 public class ClinicManager {
     private static boolean programRunning = true;
@@ -57,7 +62,7 @@ public class ClinicManager {
     private static final int RESCHEDULE_VALUE = 2;
 
     private static List<Provider> providerList = new List<Provider>();
-    private static List<Technician> technicianList = new List<Technician>();
+    private static CircularLinkedList technicianList = new CircularLinkedList();
     private static List<Doctor> doctorList = new List<Doctor>();
     private static List<Appointment> appointmentList = new List<Appointment>();
 
@@ -150,16 +155,20 @@ public class ClinicManager {
             System.out.println(e);
             return;
         }
+        provider(providerList);
+        technicianList.reverse();
         System.out.println("Providers loaded to the list.");
-        for(int i = providerList.size()-1; i >= 0 ; i--){
+        for(int i = 0; i < providerList.size() ; i++){
             System.out.println(providerList.get(i).toString());
         }
         System.out.println("Rotation list for the technicians.");
-        for(int i = technicianList.size()-1; i >= 0 ; i--){
-            System.out.print(technicianList.get(i).toString());
+        Node currNode = technicianList.getHead();
+        for(int i = technicianList.getSize()-1; i >= 0 ; i--){
+            System.out.print(currNode.getTechnician().toString());
             if (i != 0){
                 System.out.print(" --> ");
             }
+            currNode = currNode.getNext();
         }
         System.out.println();
 

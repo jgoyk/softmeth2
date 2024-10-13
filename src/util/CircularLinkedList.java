@@ -5,32 +5,55 @@ import clinic.Technician;
 public class CircularLinkedList {
     private Node head;
     private Node tail;
+    private int size;
 
     public CircularLinkedList() {
         head = null;
         tail = null;
+        size = 0;
     }
-
+    public int getSize(){
+        return size;
+    }
+    public Node getHead(){
+        return head;
+    }
     public void add(Technician data) {
         Node newNode = new Node(data);
 
-        // If the list is empty, make the new node
-        // the head and tail
         if (head == null) {
             head = newNode;
             tail = newNode;
 
-            // Point to itself in a circular list
             newNode.next = head;
         } else {
             newNode.next = head;
             tail.next = newNode;
             tail = newNode;
         }
+        size += 1;
     }
 
-    // Method to delete the node with the given
-    // key from the circular linked list
+    public void reverse(){
+        if (head == null){
+            return;
+        }
+
+        Node prev = null;
+        Node current = head;
+        Node next;
+        do {
+            next = current.next;
+            current.next = prev;
+            prev = current;
+            current = next;
+        } while (current != (head));
+
+        (head).next = prev;
+        head = prev;
+    }
+
+
     public void delete(Technician key) {
         if (head == null) {
             return;
@@ -40,7 +63,6 @@ public class CircularLinkedList {
         Node prev = null;
         while (curr.next != head) {
             if (curr.data == key) {
-                // If the node to be deleted is the head node
                 if (prev == null) {
                     Node last = head;
                     while (last.next != head) {
@@ -52,7 +74,6 @@ public class CircularLinkedList {
                 } else {
                     prev.next = curr.next;
 
-                    // Update tail if the last node is deleted
                     if (curr == tail) {
                         tail = prev;
                     }
@@ -63,12 +84,10 @@ public class CircularLinkedList {
             curr = curr.next;
         }
 
-        // Check if the node to be deleted is the last node
         if (curr == head && curr.data == key) {
             prev.next = head;
-
-            // Update tail if the last node is deleted
             tail = prev;
         }
+        size -= 1;
     }
 }
