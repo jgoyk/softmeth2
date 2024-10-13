@@ -2,6 +2,8 @@ package util;
 
 import clinic.Appointment;
 
+import java.util.Iterator;
+
 public class List<E>  {
     //implements Iterable<E>
     public static final int INITIAL_CAPACITY = 4;
@@ -74,20 +76,35 @@ public class List<E>  {
     public int size() {
         return size;
     }
-//    public Iterator<E> iterator() {
-//    }
-//}
+
+    public Iterator<E> iterator() {
+        return new ListIterator<E>();
+    }
     public E get(int index) {
+        if (index < 0 || index >= size) {
+            return null;
+        }
         return objects[index];
     } //return the object at the index
+
     public void set(int index, E e) {
+        if (index < 0 || index >= size) {
+            return;
+        }
         objects[index] = e;
     } //put object e at the index
+
     public int indexOf(E e) {
         return find(e);
     } //return the index of the object or return -1
-//    private class ListIterator<E> implements Iterator<E> {
-//        public boolean hasNext(){}//return false if it’s empty or end of list
-//        public E next(){} //return the next object in the list
-//    }
+
+    private class ListIterator<E> implements Iterator<E> {
+        private int currentIndex = 0;
+        public boolean hasNext() {
+            return currentIndex < size && objects[currentIndex] != null;
+        }//return false if it’s empty or end of list
+        public E next() {
+            return (E) objects[currentIndex++];
+        } //return the next object in the list
+    }
 }
