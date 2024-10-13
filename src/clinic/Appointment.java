@@ -1,5 +1,6 @@
 package clinic;
 import util.Date;
+
 /**
  * Represents an appointment in a clinic system, storing information such as 
  * the date, timeslot, patient profile, and provider information.
@@ -101,7 +102,7 @@ public class Appointment implements Comparable<Appointment> {
     }
 
     /**
-     * Compares this appointment to another based on their string representations.
+     * Compares this appointment to another based on their date and then time
      *
      * @param targetAppointment The appointment to compare against.
      * @return A negative integer, zero, or a positive integer if this appointment
@@ -109,7 +110,10 @@ public class Appointment implements Comparable<Appointment> {
      */
     @Override
     public int compareTo(Appointment targetAppointment) {
-        return this.toString().compareTo(targetAppointment.toString());
+        int dateComparison = this.date.compareTo(targetAppointment.date);
+        if (dateComparison != 0) return dateComparison;
+
+        return this.timeslot.compareTo(targetAppointment.timeslot);
     }
 
     /**

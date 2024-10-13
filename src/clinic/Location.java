@@ -46,4 +46,5 @@ public enum Location {
     public String getZip() {
         return zip;
     }
+
 }

@@ -1,5 +1,5 @@
 package clinic;
-abstract class Provider extends Person{
+public abstract class Provider extends Person{
     private Location location;
     public abstract int rate();
 
@@ -14,6 +14,10 @@ abstract class Provider extends Person{
     public Provider(Profile profile, Location location) {
         super(profile);  // Calls the default constructor of Person (initializes profile as null)
         this.location = location;
+    }
+
+    public Location getLocation() {
+        return this.location;
     }
 
     @Override

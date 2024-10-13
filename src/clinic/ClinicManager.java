@@ -247,7 +247,7 @@ public class ClinicManager {
     private Appointment createOfficeAppointment(String[] commandArray){
 
         if(commandArray.length != D_OR_T_COMMAND_LENGTH){
-            System.out.println("Invalid command!");
+            System.out.println("Missing data tokens.");
             return null;
         }
         Date date = null;
@@ -279,6 +279,74 @@ public class ClinicManager {
 
         return new Appointment(date, slot, patient, provider);
     }
+
+    /**
+     * Creates an appointment based off commandLine input array
+     * Returns the new appointment object if successful, null otherwise
+     * @param commandArray an array from command line input with data to create appointment
+     @return an appointment or null object based on provided commandLine input array
+     */
+    private Appointment createTechnicianAppointment(String[] commandArray){
+
+        if(commandArray.length != D_OR_T_COMMAND_LENGTH){
+            System.out.println("Missing data tokens.");
+            return null;
+        }
+        Date date = null;
+        Timeslot slot = null;
+        Person patient = null;
+        Radiology service = null;
+        Person provider = null;
+
+        try{
+            date = new Date(commandArray[INDEX_APPOINTMENT_DATE]);
+        }catch(Exception e){
+            System.out.println("Appointment date: " + commandArray[INDEX_APPOINTMENT_DATE] + " is not a valid date.");
+            return null;
+        }
+
+        try{
+            patient = profileCreator(commandArray[INDEX_FIRST_NAME], commandArray[INDEX_LAST_NAME], commandArray[INDEX_DATE_OF_BIRTH]);
+
+            slot = timeslotCreator(commandArray[INDEX_TIMESLOT]);
+        }catch(Exception e){
+            return null;
+        }
+
+        if(!date.isValid()){
+            System.out.println("Appointment date: " + commandArray[INDEX_APPOINTMENT_DATE] + " is not a valid date.");
+        }
+        if( slot == null || patient == null){
+            return null;
+        }
+
+        return new Appointment(date, slot, patient, provider);
+    }
+    /**
+     Creates a profile object based off inputs
+     If any errors occur they are printed and null is return
+     @param serviceString a string representing patient first name
+     @return Profile object based off input data
+     */
+    private Person technicianAssigner(String serviceString){
+        Radiology room = null;
+        for (Radiology service : Radiology.values()) {
+            if(service.name().toLowerCase().equals(serviceString.toLowerCase().trim())){
+                room = service;
+            }
+        }
+        if(room == null){
+            System.out.println(serviceString + " - imaging service not provided.");
+            return null;
+        }
+
+        Person technician = null;
+
+
+        return technician;
+    }
+
+
     /**
      Creates a profile object based off inputs
      If any errors occur they are printed and null is return
