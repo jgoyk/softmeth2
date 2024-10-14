@@ -118,9 +118,25 @@ public class ClinicManager {
                     addAppointmentToList(newImagingAppointment, BOOKED_VALUE);
                 }
                 break;
-            case "C": //Cancel appointment
-
+            case "C":
+            if (inputList.length != VALID_C_COMMAND_LENGTH) {
+                System.out.println("Missing data tokens.");
                 break;
+            }
+
+            Appointment appointmentToCancel = appointmentList[inputList];
+            if (appointmentToCancel != null) {
+                if (appointmentList.contains(appointmentToCancel)) {  // Check if the appointment exists
+                    appointmentList.remove(appointmentToCancel);  // Call the void remove method
+                    System.out.println(appointmentToCancel.toString() + " canceled.");
+                } else {
+                    System.out.println("Appointment could not be canceled.");
+                }
+            } else {
+                System.out.println("Appointment not found.");
+            }
+            break;
+
             case "R": //Reschedule appointment
 
                 break;
