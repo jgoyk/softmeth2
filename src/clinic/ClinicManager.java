@@ -28,6 +28,7 @@ public class ClinicManager {
     private static final int INDEX_NEWTIMESLOT = 6;
     private static final int D_OR_T_COMMAND_LENGTH = 7;
     private static final int VALID_C_COMMAND_LENGTH = 6;
+    private static final int VALID_R_COMMAND_LENGTH = 7;
 
     private static final int DOCTOR_COMMAND_LENGTH = 7;
     private static final int TECHNICIAN_COMMAND_LENGTH = 6;
@@ -123,40 +124,68 @@ public class ClinicManager {
                 break;
 
             case "R": //Reschedule appointment
-
+                rescheduleAppointment(inputList);
                 break;
             case "PA": // Print appointment list sorted by appointment date, time, then provider’s name.
-                Sort.appointment(appointmentList, DATE_TIME_PROVIDER_NAME);
-                System.out.println(OUTPUT_HEADER_ARRAY[PRINT_APPOINTMENT_VALUE]);
-                for (int i = 0; i < appointmentList.size(); i++) {
-                    System.out.println(appointmentList.get(i).toString());
+                if (!(appointmentList.isEmpty())){
+                    Sort.appointment(appointmentList, DATE_TIME_PROVIDER_NAME);
+                    System.out.println(OUTPUT_HEADER_ARRAY[PRINT_APPOINTMENT_VALUE]);
+                    for (int i = 0; i < appointmentList.size(); i++) {
+                        System.out.println(appointmentList.get(i).toString());
+                    }
+                } else {
+                    System.out.println("Schedule calendar is empty.");
                 }
                 break;
             case "PP":// Print appointment list sorted by the patient (by last name, first name, date of birth, then appointment date and time).
-                Sort.appointment(appointmentList, PATIENT_DATE_TIME);
-                System.out.println(OUTPUT_HEADER_ARRAY[PRINT_PATIENT_VALUE]);
-                for (int i = 0; i < appointmentList.size(); i++) {
-                    System.out.println(appointmentList.get(i).toString());
+                if (!(appointmentList.isEmpty())){
+                    Sort.appointment(appointmentList, PATIENT_DATE_TIME);
+                    System.out.println(OUTPUT_HEADER_ARRAY[PRINT_PATIENT_VALUE]);
+                    for (int i = 0; i < appointmentList.size(); i++) {
+                        System.out.println(appointmentList.get(i).toString());
+                    }
+                } else {
+                    System.out.println("Schedule calendar is empty.");
                 }
                 break;
             case "PL": // Print appointment list sorted by the county name, then the appointment date and time.
-                Sort.appointment(appointmentList, COUNTY_DATE_TIME);
-                System.out.println(OUTPUT_HEADER_ARRAY[PRINT_LOCATION_VALUE]);
-                for (int i = 0; i < appointmentList.size(); i++) {
-                    System.out.println(appointmentList.get(i).toString());
+                if (!(appointmentList.isEmpty())){
+                    Sort.appointment(appointmentList, COUNTY_DATE_TIME);
+                    System.out.println(OUTPUT_HEADER_ARRAY[PRINT_LOCATION_VALUE]);
+                    for (int i = 0; i < appointmentList.size(); i++) {
+                        System.out.println(appointmentList.get(i).toString());
+                    }
+                } else {
+                    System.out.println("Schedule calendar is empty.");
                 }
                 break;
             case "PS": // Print billing statements of all patients
+                if (!(appointmentList.isEmpty())){
 
+                } else {
+                    System.out.println("Schedule calendar is empty.");
+                }
                 break;
             case "PO": // Print the list of office appointments, sorted by the county name, then date and time.
+                if (!(appointmentList.isEmpty())){
 
+                } else {
+                    System.out.println("Schedule calendar is empty.");
+                }
                 break;
             case "PI": // Print the list of imaging appointments, sorted by the county name, then date and time.
+                if (!(appointmentList.isEmpty())){
 
+                } else {
+                    System.out.println("Schedule calendar is empty.");
+                }
                 break;
             case "PC": // Print the expected credit amounts for the providers, sorted by provider profile
+                if (!(appointmentList.isEmpty())){
 
+                } else {
+                    System.out.println("Schedule calendar is empty.");
+                }
                 break;
             default: // Command not recognized
                 System.out.println("Invalid command!");
@@ -381,8 +410,6 @@ public class ClinicManager {
         } catch (Exception e) {
             System.out.println(date.toString() + " " +  slot.toString() + " " + profile.toString() + " - appointment does not exist.");
         }
-
-
         Iterator<Appointment> iterator = appointmentList.iterator();
         while (iterator.hasNext()){
             Appointment apptToCheck = iterator.next();
@@ -394,6 +421,40 @@ public class ClinicManager {
         }
         System.out.println(date.toString() + " " +  slot.toString() + " " + profile.toString() + " - appointment does not exist.");
     }
+
+    private void rescheduleAppointment(String[] commandArray){
+        if (commandArray.length != VALID_R_COMMAND_LENGTH) {
+            System.out.println("Missing data tokens.");
+            return;
+        }
+        Date date = null;
+        Timeslot slot = null;
+        Timeslot newTimeslot = null;
+        Profile profile = null;
+        Person patient = null;
+        Appointment newAppointmment = null;
+        try{
+            date = new Date(commandArray[INDEX_APPOINTMENT_DATE]);
+            slot = new Timeslot(Integer.parseInt(commandArray[INDEX_TIMESLOT]));
+            profile = new Profile(commandArray[INDEX_FIRST_NAME], commandArray[INDEX_LAST_NAME], new Date(commandArray[INDEX_DATE_OF_BIRTH]));
+            newTimeslot = new Timeslot(Integer.parseInt(commandArray[INDEX_NEWTIMESLOT]));
+        } catch (Exception e) {
+            System.out.println(date.toString() + " " +  slot.toString() + " " + profile.toString() + " does not exist.");
+        }
+
+        Iterator<Appointment> iterator = appointmentList.iterator();
+        while (iterator.hasNext()){
+            Appointment apptToCheck = iterator.next();
+            if (apptToCheck.getPatient().getProfile().equals(profile) && apptToCheck.getTimeslot().equals(slot) && apptToCheck.getDate().equals(date)){
+                if(addAppointmentToList(new Appointment(date, newTimeslot, new Person(profile), apptToCheck.getProvider()), RESCHEDULE_VALUE)){
+                    appointmentList.remove(apptToCheck);
+                }
+                return;
+            }
+        }
+        System.out.println(date.toString() + " " +  slot.toString() + " " + profile.toString() + " does not exist.");
+    }
+
 
 
 
@@ -626,17 +687,14 @@ public class ClinicManager {
         Iterator<Appointment> iterator = appointmentList.iterator();
         while (iterator.hasNext()){
             Appointment apptToCheck = iterator.next();
-            if (apptToCheck.getProvider().equals(appointment.getProvider()) && apptToCheck.getTimeslot().equals(appointment.getTimeslot())){
-                if(appointment.getProvider() instanceof Technician){
-                    Technician apptTechnician = (Technician)(appointment.getProvider());
-                    System.out.println(apptTechnician.toString()+ " is not available at slot " + appointment.getTimeslot().getTimeslotInt());
-                } else {
+            if (apptToCheck.getProvider().equals(appointment.getProvider()) && apptToCheck.getTimeslot().equals(appointment.getTimeslot()) && apptToCheck.getDate().equals(appointment.getDate())){
+                if (!(appointment.getProvider() instanceof Technician)){
                     Doctor apptTechnician = (Doctor)(appointment.getProvider());
                     System.out.println(apptTechnician.toString()+ " is not available at slot " + appointment.getTimeslot().getTimeslotInt());
                 }
                 return false;
             }
-            if (apptToCheck.getPatient().equals(appointment.getPatient()) && apptToCheck.getTimeslot().equals(appointment.getTimeslot())){
+            if (apptToCheck.getPatient().equals(appointment.getPatient()) && apptToCheck.getTimeslot().equals(appointment.getTimeslot()) && apptToCheck.getDate().equals(appointment.getDate())){
                 System.out.println(appointment.getPatient().toString() + " has an existing appointment at the same time slot.");
                 return false;
             }
