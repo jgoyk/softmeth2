@@ -119,23 +119,8 @@ public class ClinicManager {
                 }
                 break;
             case "C":
-            if (inputList.length != VALID_C_COMMAND_LENGTH) {
-                System.out.println("Missing data tokens.");
+                cancelAppointment(inputList);
                 break;
-            }
-
-            Appointment appointmentToCancel = appointmentList[inputList];
-            if (appointmentToCancel != null) {
-                if (appointmentList.contains(appointmentToCancel)) {  // Check if the appointment exists
-                    appointmentList.remove(appointmentToCancel);  // Call the void remove method
-                    System.out.println(appointmentToCancel.toString() + " canceled.");
-                } else {
-                    System.out.println("Appointment could not be canceled.");
-                }
-            } else {
-                System.out.println("Appointment not found.");
-            }
-            break;
 
             case "R": //Reschedule appointment
 
@@ -379,6 +364,39 @@ public class ClinicManager {
 
         return new Imaging(date, slot, patient, provider, room);
     }
+
+    private void cancelAppointment(String[] commandArray){
+        if (commandArray.length != VALID_C_COMMAND_LENGTH) {
+            System.out.println("Missing data tokens.");
+            return;
+        }
+        Date date = null;
+        Timeslot slot = null;
+        Profile profile = null;
+        Person patient = null;
+        try{
+            date = new Date(commandArray[INDEX_APPOINTMENT_DATE]);
+            slot = new Timeslot(Integer.parseInt(commandArray[INDEX_TIMESLOT]));
+            profile = new Profile(commandArray[INDEX_FIRST_NAME], commandArray[INDEX_LAST_NAME], new Date(commandArray[INDEX_DATE_OF_BIRTH]));
+        } catch (Exception e) {
+            System.out.println(date.toString() + " " +  slot.toString() + " " + profile.toString() + " - appointment does not exist.");
+        }
+
+
+        Iterator<Appointment> iterator = appointmentList.iterator();
+        while (iterator.hasNext()){
+            Appointment apptToCheck = iterator.next();
+            if (apptToCheck.getPatient().getProfile().equals(profile) && apptToCheck.getTimeslot().equals(slot) && apptToCheck.getDate().equals(date)){
+                appointmentList.remove(apptToCheck);
+                System.out.println(date.toString() + " " +  slot.toString() + " " + profile.toString() + " - appointment has been canceled.");
+                return;
+            }
+        }
+        System.out.println(date.toString() + " " +  slot.toString() + " " + profile.toString() + " - appointment does not exist.");
+    }
+
+
+
     private boolean imagingAppointmentValid(Date date, Timeslot slot, Person patient){
         // Check if patient has appointment at that timeslot
         Iterator<Appointment> iterator = appointmentList.iterator();

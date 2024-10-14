@@ -70,9 +70,11 @@ public class List<E>  {
         }
         objects[--size] = null; // Decrement size and set the last element to null
     }
+
     public boolean isEmpty() {
         return size == 0;
     }
+
     public int size() {
         return size;
     }

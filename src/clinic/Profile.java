@@ -145,8 +145,8 @@ public class Profile implements Comparable<Profile> {
             return false;
         }
         Profile targetProfile = (Profile) obj;
-        return firstName.equals(targetProfile.getFirstName()) &&
-                lastName.equals(targetProfile.getLastName()) &&
+        return firstName.equalsIgnoreCase(targetProfile.getFirstName()) &&
+                lastName.equalsIgnoreCase(targetProfile.getLastName()) &&
                 dateOfBirth.equals(targetProfile.getDateOfBirth());
     }
 }
