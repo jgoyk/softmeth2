@@ -43,10 +43,14 @@ public class ClinicManager {
     private static final int MIN_TIMESLOT_INDEX = 1;
     private static final int MAX_TIMESLOT_INDEX = 6;
 
-    private static final String[] OUTPUT_HEADER_ARRAY = {"** Appointments ordered by date/time/provider **", "** Appointments ordered by patient/date/time **", "** Appointments ordered by county/date/time **"};
+    private static final String[] OUTPUT_HEADER_ARRAY = {"** List of appointments, ordered by date/time/provider.", "** Appointments ordered by patient/date/time **",
+            "** List of appointments, ordered by county/date/time.", "** List of office appointments ordered by county/date/time.",
+            "** List of radiology appointments ordered by county/date/time."};
     private static final int PRINT_APPOINTMENT_VALUE = 0;
     private static final int PRINT_PATIENT_VALUE = 1;
     private static final int PRINT_LOCATION_VALUE = 2;
+    private static final int PRINT_OFFICE_VALUE = 3;
+    private static final int PRINT_IMAGING_VALUE = 4;
 
     private static final int DATE_IS_TODAY = 0;
     private static final int DATE_BEFORE_TODAY = -1;
@@ -68,6 +72,9 @@ public class ClinicManager {
     public static final char DATE_TIME_PROVIDER_NAME = 'A'; //Used for PA Command
     public static final char PATIENT_DATE_TIME = 'P'; // Used for PP and PS commands
     public static final char COUNTY_DATE_TIME = 'L'; // Used for PL, PO, and PI commands
+    public static final int APPOINTMENT_TYPE_BOTH = 0;
+    public static final int APPOINTMENT_TYPE_OFFICE = 1;
+    public static final int APPOINTMENT_TYPE_IMAGING = 2;
 
     private static List<Provider> providerList = new List<Provider>();
     private static CircularLinkedList technicianList = new CircularLinkedList();
@@ -127,37 +134,13 @@ public class ClinicManager {
                 rescheduleAppointment(inputList);
                 break;
             case "PA": // Print appointment list sorted by appointment date, time, then provider’s name.
-                if (!(appointmentList.isEmpty())){
-                    Sort.appointment(appointmentList, DATE_TIME_PROVIDER_NAME);
-                    System.out.println(OUTPUT_HEADER_ARRAY[PRINT_APPOINTMENT_VALUE]);
-                    for (int i = 0; i < appointmentList.size(); i++) {
-                        System.out.println(appointmentList.get(i).toString());
-                    }
-                } else {
-                    System.out.println("Schedule calendar is empty.");
-                }
+                outputInSortedOrder(DATE_TIME_PROVIDER_NAME, APPOINTMENT_TYPE_BOTH);
                 break;
             case "PP":// Print appointment list sorted by the patient (by last name, first name, date of birth, then appointment date and time).
-                if (!(appointmentList.isEmpty())){
-                    Sort.appointment(appointmentList, PATIENT_DATE_TIME);
-                    System.out.println(OUTPUT_HEADER_ARRAY[PRINT_PATIENT_VALUE]);
-                    for (int i = 0; i < appointmentList.size(); i++) {
-                        System.out.println(appointmentList.get(i).toString());
-                    }
-                } else {
-                    System.out.println("Schedule calendar is empty.");
-                }
+                outputInSortedOrder(PATIENT_DATE_TIME, APPOINTMENT_TYPE_BOTH);
                 break;
             case "PL": // Print appointment list sorted by the county name, then the appointment date and time.
-                if (!(appointmentList.isEmpty())){
-                    Sort.appointment(appointmentList, COUNTY_DATE_TIME);
-                    System.out.println(OUTPUT_HEADER_ARRAY[PRINT_LOCATION_VALUE]);
-                    for (int i = 0; i < appointmentList.size(); i++) {
-                        System.out.println(appointmentList.get(i).toString());
-                    }
-                } else {
-                    System.out.println("Schedule calendar is empty.");
-                }
+                outputInSortedOrder(COUNTY_DATE_TIME, APPOINTMENT_TYPE_BOTH);
                 break;
             case "PS": // Print billing statements of all patients
                 if (!(appointmentList.isEmpty())){
@@ -167,18 +150,10 @@ public class ClinicManager {
                 }
                 break;
             case "PO": // Print the list of office appointments, sorted by the county name, then date and time.
-                if (!(appointmentList.isEmpty())){
-
-                } else {
-                    System.out.println("Schedule calendar is empty.");
-                }
+                outputInSortedOrder(COUNTY_DATE_TIME, APPOINTMENT_TYPE_OFFICE);
                 break;
             case "PI": // Print the list of imaging appointments, sorted by the county name, then date and time.
-                if (!(appointmentList.isEmpty())){
-
-                } else {
-                    System.out.println("Schedule calendar is empty.");
-                }
+                outputInSortedOrder(COUNTY_DATE_TIME, APPOINTMENT_TYPE_IMAGING);
                 break;
             case "PC": // Print the expected credit amounts for the providers, sorted by provider profile
                 if (!(appointmentList.isEmpty())){
@@ -455,7 +430,41 @@ public class ClinicManager {
         System.out.println(date.toString() + " " +  slot.toString() + " " + profile.toString() + " does not exist.");
     }
 
+    private void outputInSortedOrder(char order, int apptType){
+        if (!(appointmentList.isEmpty())){
+            Sort.appointment(appointmentList, order);
+            switch (apptType){
+                case APPOINTMENT_TYPE_OFFICE:
+                    System.out.println(OUTPUT_HEADER_ARRAY[PRINT_OFFICE_VALUE]);
+                    break;
+                case APPOINTMENT_TYPE_IMAGING:
+                    System.out.println(OUTPUT_HEADER_ARRAY[PRINT_IMAGING_VALUE]);
+                    break;
+                case APPOINTMENT_TYPE_BOTH:
+                    switch (order){
+                        case PATIENT_DATE_TIME:
+                            System.out.println(OUTPUT_HEADER_ARRAY[PRINT_PATIENT_VALUE]);
+                            break;
+                        case DATE_TIME_PROVIDER_NAME:
+                            System.out.println(OUTPUT_HEADER_ARRAY[PRINT_APPOINTMENT_VALUE]);
+                            break;
+                        case COUNTY_DATE_TIME:
+                            System.out.println(OUTPUT_HEADER_ARRAY[PRINT_LOCATION_VALUE]);
+                            break;
+                    }
+                    break;
+            }
+            for (int i = 0; i < appointmentList.size(); i++) {
+                if (apptType == APPOINTMENT_TYPE_BOTH) System.out.println(appointmentList.get(i).toString());
+                if (apptType == APPOINTMENT_TYPE_OFFICE && !(appointmentList.get(i) instanceof Imaging)) System.out.println(appointmentList.get(i).toString());
+                if (apptType == APPOINTMENT_TYPE_IMAGING && appointmentList.get(i) instanceof Imaging) System.out.println(appointmentList.get(i).toString());
+            }
+            System.out.println("** end of list **");
+        } else {
+            System.out.println("Schedule calendar is empty.");
+        }
 
+    }
 
 
     private boolean imagingAppointmentValid(Date date, Timeslot slot, Person patient){

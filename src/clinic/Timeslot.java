@@ -127,8 +127,11 @@ public class Timeslot implements Comparable<Timeslot> {
      */
     @Override
     public String toString() {
-        return String.format("%02d:%02d", hour, minute);
+        int displayHour = (hour % 12 == 0) ? 12 : hour % 12;
+        String amPm = (hour < 12) ? "AM" : "PM";
+        return String.format("%d:%02d %s", displayHour, minute, amPm);
     }
+
 
     /**
      * Checks if this time slot is equal to another object.

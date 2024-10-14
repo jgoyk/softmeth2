@@ -82,8 +82,10 @@ public class Sort {
         } else if (key == COUNTY_DATE_TIME){
             if (countyComparison != EQUAL){
                 return countyComparison;
-            } else{
+            } else if (dateTimeComparison != EQUAL){
                 return dateTimeComparison;
+            } else {
+                return patientComparison;
             }
         }
         return EQUAL;
