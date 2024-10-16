@@ -215,7 +215,10 @@ public class ClinicManager {
         }
         System.out.println();
     }
-
+    /**
+     * Creates a new provider based on the input command received from the user.
+     * @param inputLine A string representing the input command from the user.
+     */
     private void providerCreator(String inputLine){
         if(inputLine.isEmpty()){
             return;
