@@ -866,7 +866,8 @@ public class ClinicManager {
                 Person patient = patientList[i];
                 int dueAmount = patientBills[i];
                 String profileInfo = patient.getProfile().toString();
-                System.out.printf("(%d) %s [due: $%.2f]%n", count++, profileInfo, (double) dueAmount);}
+                System.out.printf("(%d) %s [due: $%,.2f]%n", count++, profileInfo, (double) dueAmount);}
+
             System.out.println("** end of list **");
         } else {System.out.println("Schedule calendar is empty.");}
     }
