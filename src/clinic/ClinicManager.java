@@ -14,6 +14,16 @@ import util.Sort;
 import static util.Sort.appointment;
 import static util.Sort.provider;
 
+/**
+ * The {@code ClinicManager} class manages clinic operations, including
+ * scheduling, canceling, and rescheduling appointments. It handles patient
+ * records, provider information, and billing statements. The class provides
+ * methods to interact with the appointment list and generate reports related
+ * to clinic operations.
+ * 
+ * @author Dhawal Arora (Netid: da812)
+ * @author Joshua Goykhman (Netid: jg1986)
+ */
 public class ClinicManager {
     private static boolean programRunning = true;
 
