@@ -7,7 +7,7 @@ package clinic;
  * The Radiology enum is used in imaging appointments to specify which
  * type of imaging service the appointment is for.
  * 
- * @author Dhawal
+ * @author Dhawal Arora (Netid: da812)
  */
 public enum Radiology {
     CATSCAN("CAT Scan"),

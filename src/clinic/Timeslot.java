@@ -6,7 +6,7 @@ package clinic;
  * 
  * This class provides utility methods for formatting and comparing times.
  * 
- * @author Joshua Goykhman
+ * @author Joshua Goykhman (Netid: jg1986)
  */
 public class Timeslot implements Comparable<Timeslot> {
     private int hour;   // Hour of the time slot

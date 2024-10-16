@@ -7,7 +7,7 @@ import util.Date;
  * 
  * Imaging services are assigned to a specific room based on the type of imaging service.
  * 
- * @author Dhawal Arora
+ * @author Dhawal Arora (Netid: da812)
  */
 public class Imaging extends Appointment {
     private Radiology room; // Room type for the imaging service (X-ray, ultrasound, or CAT scan)

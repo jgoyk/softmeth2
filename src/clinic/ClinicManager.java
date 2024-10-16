@@ -1,7 +1,6 @@
 package clinic;
 
 import java.util.Calendar;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Scanner;
 
@@ -163,11 +162,20 @@ public class ClinicManager {
         }
     }
 
-    private void readProviderFile(){
+    /**
+     * Reads provider data from the "providers.txt" file located in the "./src/" directory.
+     *
+     * Each line is processed to create provider objects using the `providerCreator` method. 
+     * After loading the providers, the method prints the list of providers and the rotation 
+     * list of technicians in reverse order, displaying each technician's name and location.
+     * 
+     * If an error occurs while reading the file, an error message is printed.
+     */
+    private void readProviderFile() {
         try {
             File providerFile = new File("./src/providers.txt");
             Scanner fileScanner = new Scanner(providerFile);
-            while(fileScanner.hasNextLine()){
+            while (fileScanner.hasNextLine()) {
                 String commandArray = fileScanner.nextLine();
                 providerCreator(commandArray);
             }
@@ -178,7 +186,7 @@ public class ClinicManager {
         provider(providerList);
         technicianList.reverse();
         System.out.println("Providers loaded to the list.");
-        for(int i = 0; i < providerList.size() ; i++){
+        for (int i = 0; i < providerList.size(); i++) {
             System.out.println(providerList.get(i).toString());
         }
         System.out.println("Rotation list for the technicians.");
@@ -186,11 +194,7 @@ public class ClinicManager {
         for (int i = technicianList.getSize() - 1; i >= 0; i--) {
             Technician technician = currNode.getTechnician();
             String name = technician.getProfile().getFirstName() + " " + technician.getProfile().getLastName();
-            
-            // Assuming Location has a method like getName() or a proper toString() to extract the city
-            String location = technician.getLocation().toString(); // Adjust this to whatever method gives you the city
-        
-            // Print the technician's name and location
+            String location = technician.getLocation().toString(); 
             System.out.print(name + " (" + location + ")");
         
             if (i != 0) {
@@ -200,8 +204,6 @@ public class ClinicManager {
             currNode = currNode.getNext();
         }
         System.out.println();
-        
-
     }
 
     private void providerCreator(String inputLine){
@@ -223,8 +225,17 @@ public class ClinicManager {
 
     }
 
-    private void doctorCreator(String[] commandArray){
-        if (commandArray.length != DOCTOR_COMMAND_LENGTH){
+    /**
+     * Creates a Doctor object from the provided command array and adds it to the provider and doctor lists.
+     *
+     * The command array must contain the required number of elements defined by `DOCTOR_COMMAND_LENGTH`.
+     * It extracts the doctor's profile information, NPI number, location, and specialty,
+     * and initializes a Doctor instance which is then added to the `providerList` and `doctorList`.
+     *
+     * @param commandArray An array containing the doctor's details.
+     */
+    private void doctorCreator(String[] commandArray) {
+        if (commandArray.length != DOCTOR_COMMAND_LENGTH) {
             return;
         }
 
@@ -237,12 +248,12 @@ public class ClinicManager {
         Specialty doctorSpecialty = null;
 
         for (Location location : Location.values()) {
-            if(location.name().equals(locationString.trim())){
+            if (location.name().equals(locationString.trim())) {
                 providerLocation = location;
             }
         }
         for (Specialty specialty : Specialty.values()) {
-            if(specialty.name().equals(specialtyString.trim())){
+            if (specialty.name().equals(specialtyString.trim())) {
                 doctorSpecialty = specialty;
             }
         }
@@ -251,8 +262,17 @@ public class ClinicManager {
         doctorList.add(doctor);
     }
 
-    private void technicianCreator(String[] commandArray){
-        if (commandArray.length != TECHNICIAN_COMMAND_LENGTH){
+    /**
+     * Creates a Technician object from the provided command array and adds it to the provider and technician lists.
+     *
+     * The command array must contain the required number of elements defined by `TECHNICIAN_COMMAND_LENGTH`.
+     * It extracts the technician's profile information, rate, and location,
+     * and initializes a Technician instance which is then added to the `providerList` and `technicianList`.
+     *
+     * @param commandArray An array containing the technician's details.
+     */
+    private void technicianCreator(String[] commandArray) {
+        if (commandArray.length != TECHNICIAN_COMMAND_LENGTH) {
             return;
         }
 
@@ -262,13 +282,11 @@ public class ClinicManager {
         String locationString = commandArray[PROVIDER_LOCATION_INDEX];
         Location providerLocation = null;
 
-
         for (Location location : Location.values()) {
-            if(location.name().equals(locationString.trim())){
+            if (location.name().equals(locationString.trim())) {
                 providerLocation = location;
             }
         }
-
 
         Technician technician = new Technician(profile, providerLocation, rate);
         providerList.add(technician);
@@ -374,7 +392,17 @@ public class ClinicManager {
         return new Imaging(date, slot, patient, provider, room);
     }
 
-    private void cancelAppointment(String[] commandArray){
+    /**
+     * Cancels an appointment based on the provided command array.
+     *
+     * The command array must contain the required number of elements defined by `VALID_C_COMMAND_LENGTH`.
+     * It extracts the appointment date, timeslot, and patient profile from the command array.
+     * If a matching appointment is found, it is removed from the appointment list.
+     * Otherwise, a message indicating that the appointment does not exist is printed.
+     *
+     * @param commandArray An array containing the appointment details.
+     */
+    private void cancelAppointment(String[] commandArray) {
         if (commandArray.length != VALID_C_COMMAND_LENGTH) {
             System.out.println("Missing data tokens.");
             return;
@@ -382,27 +410,36 @@ public class ClinicManager {
         Date date = null;
         Timeslot slot = null;
         Profile profile = null;
-        Person patient = null;
-        try{
+        try {
             date = new Date(commandArray[INDEX_APPOINTMENT_DATE]);
             slot = new Timeslot(Integer.parseInt(commandArray[INDEX_TIMESLOT]));
             profile = new Profile(commandArray[INDEX_FIRST_NAME], commandArray[INDEX_LAST_NAME], new Date(commandArray[INDEX_DATE_OF_BIRTH]));
         } catch (Exception e) {
-            System.out.println(date.toString() + " " +  slot.toString() + " " + profile.toString() + " - appointment does not exist.");
+            System.out.println(date + " " + slot + " " + profile + " - appointment does not exist.");
         }
         Iterator<Appointment> iterator = appointmentList.iterator();
-        while (iterator.hasNext()){
+        while (iterator.hasNext()) {
             Appointment apptToCheck = iterator.next();
-            if (apptToCheck.getPatient().getProfile().equals(profile) && apptToCheck.getTimeslot().equals(slot) && apptToCheck.getDate().equals(date)){
+            if (apptToCheck.getPatient().getProfile().equals(profile) && apptToCheck.getTimeslot().equals(slot) && apptToCheck.getDate().equals(date)) {
                 appointmentList.remove(apptToCheck);
-                System.out.println(date.toString() + " " +  slot.toString() + " " + profile.toString() + " - appointment has been canceled.");
+                System.out.println(date + " " + slot + " " + profile + " - appointment has been canceled.");
                 return;
             }
         }
-        System.out.println(date.toString() + " " +  slot.toString() + " " + profile.toString() + " - appointment does not exist.");
+        System.out.println(date + " " + slot + " " + profile + " - appointment does not exist.");
     }
 
-    private void rescheduleAppointment(String[] commandArray){
+    /**
+     * Reschedules an appointment based on the provided command array.
+     *
+     * The command array must contain the required number of elements defined by `VALID_R_COMMAND_LENGTH`.
+     * It extracts the appointment date, old timeslot, new timeslot, and patient profile.
+     * If a matching appointment is found, it is removed and a new appointment is added with the updated timeslot.
+     * A message indicating success or failure is printed accordingly.
+     *
+     * @param commandArray An array containing the appointment details.
+     */
+    private void rescheduleAppointment(String[] commandArray) {
         if (commandArray.length != VALID_R_COMMAND_LENGTH) {
             System.out.println("Missing data tokens.");
             return;
@@ -411,34 +448,42 @@ public class ClinicManager {
         Timeslot slot = null;
         Timeslot newTimeslot = null;
         Profile profile = null;
-        Person patient = null;
-        Appointment newAppointmment = null;
-        try{
+        try {
             date = new Date(commandArray[INDEX_APPOINTMENT_DATE]);
             slot = new Timeslot(Integer.parseInt(commandArray[INDEX_TIMESLOT]));
             profile = new Profile(commandArray[INDEX_FIRST_NAME], commandArray[INDEX_LAST_NAME], new Date(commandArray[INDEX_DATE_OF_BIRTH]));
             newTimeslot = new Timeslot(Integer.parseInt(commandArray[INDEX_NEWTIMESLOT]));
         } catch (Exception e) {
-            System.out.println(date.toString() + " " +  slot.toString() + " " + profile.toString() + " does not exist.");
+            System.out.println(date + " " + slot + " " + profile + " does not exist.");
         }
 
         Iterator<Appointment> iterator = appointmentList.iterator();
-        while (iterator.hasNext()){
+        while (iterator.hasNext()) {
             Appointment apptToCheck = iterator.next();
-            if (apptToCheck.getPatient().getProfile().equals(profile) && apptToCheck.getTimeslot().equals(slot) && apptToCheck.getDate().equals(date)){
-                if(addAppointmentToList(new Appointment(date, newTimeslot, new Person(profile), apptToCheck.getProvider()), RESCHEDULE_VALUE)){
+            if (apptToCheck.getPatient().getProfile().equals(profile) && apptToCheck.getTimeslot().equals(slot) && apptToCheck.getDate().equals(date)) {
+                if (addAppointmentToList(new Appointment(date, newTimeslot, new Person(profile), apptToCheck.getProvider()), RESCHEDULE_VALUE)) {
                     appointmentList.remove(apptToCheck);
                 }
                 return;
             }
         }
-        System.out.println(date.toString() + " " +  slot.toString() + " " + profile.toString() + " does not exist.");
+        System.out.println(date + " " + slot + " " + profile + " does not exist.");
     }
 
-    private void outputInSortedOrder(char order, int apptType){
-        if (!(appointmentList.isEmpty()) && !listEmptied){
+
+    /**
+     * Outputs the appointment list in sorted order based on the specified criteria.
+     *
+     * If the appointment list is not empty, it sorts the appointments according to the given order and type,
+     * then prints them with appropriate headers. If the list is empty, a message indicating that the schedule is empty is printed.
+     *
+     * @param order The sorting criteria (e.g., patient date time).
+     * @param apptType The type of appointment (e.g., office, imaging, both).
+     */
+    private void outputInSortedOrder(char order, int apptType) {
+        if (!appointmentList.isEmpty() && !listEmptied) {
             Sort.appointment(appointmentList, order);
-            switch (apptType){
+            switch (apptType) {
                 case APPOINTMENT_TYPE_OFFICE:
                     System.out.println(OUTPUT_HEADER_ARRAY[PRINT_OFFICE_VALUE]);
                     break;
@@ -446,7 +491,7 @@ public class ClinicManager {
                     System.out.println(OUTPUT_HEADER_ARRAY[PRINT_IMAGING_VALUE]);
                     break;
                 case APPOINTMENT_TYPE_BOTH:
-                    switch (order){
+                    switch (order) {
                         case PATIENT_DATE_TIME:
                             System.out.println(OUTPUT_HEADER_ARRAY[PRINT_PATIENT_VALUE]);
                             break;
@@ -468,35 +513,53 @@ public class ClinicManager {
         } else {
             System.out.println("Schedule calendar is empty.");
         }
-
     }
 
 
-    private boolean imagingAppointmentValid(Date date, Timeslot slot, Person patient){
-        // Check if patient has appointment at that timeslot
+    /**
+     * Validates if a patient can schedule an imaging appointment at a specific date and timeslot.
+     *
+     * It checks if the patient already has an appointment at the given date and timeslot.
+     *
+     * @param date The date of the desired imaging appointment.
+     * @param slot The timeslot of the desired imaging appointment.
+     * @param patient The patient for whom the appointment is being scheduled.
+     * @return true if the appointment can be scheduled, false otherwise.
+     */
+    private boolean imagingAppointmentValid(Date date, Timeslot slot, Person patient) {
         Iterator<Appointment> iterator = appointmentList.iterator();
-        while (iterator.hasNext()){
+        while (iterator.hasNext()) {
             Appointment apptToCheck = iterator.next();
-            if (apptToCheck.getPatient().equals(patient) && apptToCheck.getTimeslot().equals(slot) && apptToCheck.getDate().equals(date)){
+            if (apptToCheck.getPatient().equals(patient) && apptToCheck.getTimeslot().equals(slot) && apptToCheck.getDate().equals(date)) {
                 return false;
             }
         }
         return true;
     }
 
-    private Radiology radiologyCreator(String serviceString){
+    /**
+     * Creates a Radiology service based on the provided service string.
+     *
+     * If the service string matches a defined Radiology service, it returns the corresponding service.
+     * Otherwise, it prints a message indicating the service is not provided and returns null.
+     *
+     * @param serviceString The name of the desired radiology service.
+     * @return The corresponding Radiology service, or null if not found.
+     */
+    private Radiology radiologyCreator(String serviceString) {
         Radiology room = null;
         for (Radiology service : Radiology.values()) {
-            if(service.name().toLowerCase().equals(serviceString.toLowerCase().trim())){
+            if (service.name().equalsIgnoreCase(serviceString.trim())) {
                 room = service;
             }
         }
-        if(room == null){
+        if (room == null) {
             System.out.println(serviceString + " - imaging service not provided.");
             return null;
         }
         return room;
     }
+
     /**
      Creates a profile object based off inputs
      If any errors occur they are printed and null is return
@@ -621,15 +684,12 @@ public class ClinicManager {
      @return an integer based on if the date is valid, or what the issue is
      */
     private int checkDateValid(Date targetDate){
-        //Check if date is today or before
         if(targetDate.compareTo(getSystemDate(NO_OFFSET_VALUE)) == DATE_IS_TODAY){
             return DATE_IS_TODAY;
         }
-        //Check if date is before today
         if(targetDate.compareTo(getSystemDate(NO_OFFSET_VALUE)) == DATE_BEFORE_TODAY){
             return DATE_BEFORE_TODAY;
         }
-        //Check if date is within six months
         if(targetDate.compareTo(getSystemDate(SIX_MONTH_OFFSET)) != 1){
             return DATE_IS_VALID;
         }else{
@@ -669,7 +729,7 @@ public class ClinicManager {
             } else {
                 System.out.println( "Rescheduled to " + appointment.toString());
             }
-            return true; //Appointment was successfully added to list
+            return true;
         }
         if (appointmentValidator(appointment)){
             appointmentList.add(appointment);
@@ -678,9 +738,9 @@ public class ClinicManager {
             } else {
                 System.out.println( "Rescheduled to " + appointment.toString());
             }
-            return true; //Appointment was successfully added to list
+            return true;
         }
-        return false; //Appointment was not added to list
+        return false;
 
     }
 
@@ -692,13 +752,10 @@ public class ClinicManager {
      */
     private boolean appointmentValidator(Appointment appointment){
 
-        // Check if patient is available
         if(appointmentList.contains(appointment)){
             System.out.println(appointment.getPatient().toString()+" has an existing appointment at the same time slot.");
             return false;
         }
-
-        // Check if timeslot is available and Check if patient has appointment at that timeslot
         Iterator<Appointment> iterator = appointmentList.iterator();
         while (iterator.hasNext()){
             Appointment apptToCheck = iterator.next();
@@ -755,6 +812,14 @@ public class ClinicManager {
         return true;
     }
     
+    /**
+     * Generates and prints billing statements for patients based on appointments in the appointment list.
+     *
+     * The method accumulates the total billing amounts for each patient by iterating through the
+     * appointments, using the provider's rate for billing. The results are printed in an ordered format
+     * showing each patient's profile information along with the total amount due. If the appointment list
+     * is empty, a message indicating that the schedule is empty is printed.
+     */
     private void printBillingStatements() {
         if (!appointmentList.isEmpty()) {
             listEmptied = true;
@@ -766,7 +831,6 @@ public class ClinicManager {
             boolean found = false;
             int idx = -1;
             int size = 0;
-            // Accumulate total billing amounts per patient
             while (iterator.hasNext()) {
                 found = false;
                 idx = -1;
@@ -774,95 +838,87 @@ public class ClinicManager {
                 Person patient = appointment.getPatient();
                 Provider provider = (Provider) appointment.getProvider();
                 int billingAmount = provider.rate();
-                for(int i = 0; i < appointmentList.size(); i++){
-                    if(patientHashCodeList[i] != 0){
-                        if(patientHashCodeList[i] == patient.hashCode()){
+                for (int i = 0; i < appointmentList.size(); i++) {
+                    if (patientHashCodeList[i] != 0) {
+                        if (patientHashCodeList[i] == patient.hashCode()) {
                             found = true;
-                            idx = i;
-                        }
-                    }
-
-                }
-                if(found){
+                            idx = i;}}}
+                if (found) {
                     patientBills[idx] = patientBills[idx] + billingAmount;
                 } else {
                     patientList[size] = patient;
                     patientHashCodeList[size] = patient.hashCode();
                     patientBills[size] = billingAmount;
-                    size++;
-                }
-
-            }
-    
-            // Printing the billing statements in the required format
+                    size++;}}
             System.out.println("** Billing statement ordered by patient. **");
             int count = 1;
             for (int i = 0; i < size; i++) {
                 Person patient = patientList[i];
                 int dueAmount = patientBills[i];
-                String profileInfo = patient.getProfile().toString(); // Assuming it returns "First Last DOB"
-                
-                System.out.printf("(%d) %s [due: $%.2f]%n", count++, profileInfo, (double) dueAmount);
-            }
-            System.out.println("** end of list **");
-        } else {
-            System.out.println("Schedule calendar is empty.");
-        }
-    }
-    
-
-    private void printExpectedCredits() {
-        if (!appointmentList.isEmpty()) {
-            listEmptied = true;
-            // Use an iterator for the appointmentList
-            appointment(appointmentList, PROVIDER_NAME_DOB);
-            int[] providerCredits = new int[appointmentList.size()];
-            int[] providerHashCodeList = new int[appointmentList.size()];
-            Provider[] providerList = new Provider[appointmentList.size()];
-            Iterator<Appointment> iterator = appointmentList.iterator();
-            boolean found = false;
-            int idx = -1;
-            int size = 0;
-            // Accumulate total billing amounts per provider
-            while (iterator.hasNext()) {
-                found = false;
-                idx = -1;
-                Appointment appointment = iterator.next();
-                Provider provider = (Provider) appointment.getProvider();
-                int billingAmount = provider.rate();
-                for(int i = 0; i < appointmentList.size(); i++){
-                    if(providerHashCodeList[i] != 0){
-                        if(providerHashCodeList[i] == provider.hashCode()){
-                            found = true;
-                            idx = i;
-                        }
-                    }
-
-                }
-                if(found){
-                    providerCredits[idx] = providerCredits[idx] + billingAmount;
-                } else {
-                    providerList[size] = provider;
-                    providerHashCodeList[size] = provider.hashCode();
-                    providerCredits[size] = billingAmount;
-                    size++;
-                }
-
-            }
-
-            // Print in the required format
-            System.out.println("** Credit amount ordered by provider. **");
-            int count = 1;
-            for (int i = 0; i < size; i++) {
-                Person patient = providerList[i];
-                int creditAmount = providerCredits[i];
                 String profileInfo = patient.getProfile().toString();
-                System.out.printf("(%d) %s [credit amount: $%.2f]%n", count++, profileInfo, (double) creditAmount);
-            }
+                System.out.printf("(%d) %s [due: $%.2f]%n", count++, profileInfo, (double) dueAmount);}
             System.out.println("** end of list **");
-        } else {
-            System.out.println("Schedule calendar is empty.");
-        }
+        } else {System.out.println("Schedule calendar is empty.");}
     }
+
+        
+
+/**
+ * Calculates and prints the expected credit amounts for each provider based on the appointments in the appointment list.
+ *
+ * If the appointment list is not empty, the method accumulates billing amounts for each provider,
+ * stores them in respective arrays, and prints the credit amounts ordered by provider.
+ * The output includes each provider's profile information along with their total credit amount.
+ * If the appointment list is empty, a message indicating that the schedule is empty is printed.
+ */
+private void printExpectedCredits() {
+    if (!appointmentList.isEmpty()) {
+        listEmptied = true;
+        // Use an iterator for the appointmentList
+        appointment(appointmentList, PROVIDER_NAME_DOB);
+        int[] providerCredits = new int[appointmentList.size()];
+        int[] providerHashCodeList = new int[appointmentList.size()];
+        Provider[] providerList = new Provider[appointmentList.size()];
+        Iterator<Appointment> iterator = appointmentList.iterator();
+        boolean found = false;
+        int idx = -1;
+        int size = 0;
+        // Accumulate total billing amounts per provider
+        while (iterator.hasNext()) {
+            found = false;
+            idx = -1;
+            Appointment appointment = iterator.next();
+            Provider provider = (Provider) appointment.getProvider();
+            int billingAmount = provider.rate();
+            for (int i = 0; i < appointmentList.size(); i++) {
+                if (providerHashCodeList[i] != 0) {
+                    if (providerHashCodeList[i] == provider.hashCode()) {
+                        found = true;
+                        idx = i;
+                    }
+                }
+            }
+            if (found) {
+                providerCredits[idx] = providerCredits[idx] + billingAmount;
+            } else {
+                providerList[size] = provider;
+                providerHashCodeList[size] = provider.hashCode();
+                providerCredits[size] = billingAmount;
+                size++;
+            }}
+        // Print in the required format
+        System.out.println("** Credit amount ordered by provider. **");
+        int count = 1;
+        for (int i = 0; i < size; i++) {
+            Person patient = providerList[i];
+            int creditAmount = providerCredits[i];
+            String profileInfo = patient.getProfile().toString();
+            System.out.printf("(%d) %s [credit amount: $%.2f]%n", count++, profileInfo, (double) creditAmount);
+        }
+        System.out.println("** end of list **");
+    } else {
+        System.out.println("Schedule calendar is empty.");
+    }
+}
 }
 

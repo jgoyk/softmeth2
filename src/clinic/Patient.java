@@ -1,5 +1,10 @@
 package clinic;
 
+/**
+ * Represents a Patient, which is a type of Person with an associated visit history.
+ * 
+ * @author Dhawal Arora (Netid: da812)
+ */
 public class Patient extends Person{
     private Visit visit;
 
@@ -48,12 +53,6 @@ public class Patient extends Person{
      */
     public int charge() {
         int totalCharge = 0;
-        Visit visitNode = visit;
-
-//        while (visitNode != null) {
-//            totalCharge += visitNode.getAppointmentNode().getProvider().getSpecialty().getCharge();
-//            visitNode = visitNode.getNextVisitNode();
-//        }
         return totalCharge;
     }
 

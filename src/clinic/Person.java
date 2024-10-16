@@ -6,7 +6,7 @@ package clinic;
  * 
  * The Person class implements Comparable to allow sorting based on the profile.
  * 
- * @author YourName
+ * @author Joshua Goykhman (Netid: jg1986)
  */
 public class Person implements Comparable<Person> {
     protected Profile profile;  // The profile of the person, containing their details like name and DOB

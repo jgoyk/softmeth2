@@ -5,13 +5,13 @@ import util.Date;
  * Represents an appointment in a clinic system, storing information such as 
  * the date, timeslot, patient profile, and provider information.
  * 
- * @author YourName
+ * @author Dhawal Arora (Netid: da812)
  */
 public class Appointment implements Comparable<Appointment> {
-    protected Date date; // Date of the appointment
-    protected Timeslot timeslot; // Time slot for the appointment
-    protected Person patient; // Patient involved in the appointment
-    protected Person provider; // Provider (doctor/technician) handling the appointment
+    protected Date date; 
+    protected Timeslot timeslot;
+    protected Person patient;
+    protected Person provider;
 
     /**
      * Default constructor that initializes the appointment with null values.
