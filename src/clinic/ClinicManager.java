@@ -3,7 +3,6 @@ package clinic;
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.Map;
 import java.util.Scanner;
 
 import util.CircularLinkedList;
@@ -71,17 +70,20 @@ public class ClinicManager {
     private static final int BOOKED_VALUE = 1;
     private static final int RESCHEDULE_VALUE = 2;
 
-    public static final char DATE_TIME_PROVIDER_NAME = 'A'; //Used for PA Command
-    public static final char PATIENT_DATE_TIME = 'P'; // Used for PP and PS commands
-    public static final char COUNTY_DATE_TIME = 'L'; // Used for PL, PO, and PI commands
-    public static final int APPOINTMENT_TYPE_BOTH = 0;
-    public static final int APPOINTMENT_TYPE_OFFICE = 1;
-    public static final int APPOINTMENT_TYPE_IMAGING = 2;
+
+    private static final char PROVIDER_NAME_DOB = 'N';
+    private static final char DATE_TIME_PROVIDER_NAME = 'A'; //Used for PA Command
+    private static final char PATIENT_DATE_TIME = 'P'; // Used for PP and PS commands
+    private static final char COUNTY_DATE_TIME = 'L'; // Used for PL, PO, and PI commands
+    private static final int APPOINTMENT_TYPE_BOTH = 0;
+    private static final int APPOINTMENT_TYPE_OFFICE = 1;
+    private static final int APPOINTMENT_TYPE_IMAGING = 2;
 
     private static List<Provider> providerList = new List<Provider>();
     private static CircularLinkedList technicianList = new CircularLinkedList();
     private static List<Doctor> doctorList = new List<Doctor>();
     private static List<Appointment> appointmentList = new List<Appointment>();
+    private static boolean listEmptied = false;
 
 
     /**
@@ -144,11 +146,7 @@ public class ClinicManager {
                 outputInSortedOrder(COUNTY_DATE_TIME, APPOINTMENT_TYPE_BOTH);
                 break;
             case "PS": // Print billing statements of all patients
-                if (!(appointmentList.isEmpty())){
-                    printBillingStatements();
-                } else {
-                    System.out.println("Schedule calendar is empty.");
-                }
+                printBillingStatements();
                 break;
             case "PO": // Print the list of office appointments, sorted by the county name, then date and time.
                 outputInSortedOrder(COUNTY_DATE_TIME, APPOINTMENT_TYPE_OFFICE);
@@ -157,11 +155,7 @@ public class ClinicManager {
                 outputInSortedOrder(COUNTY_DATE_TIME, APPOINTMENT_TYPE_IMAGING);
                 break;
             case "PC": // Print the expected credit amounts for the providers, sorted by provider profile
-                if (!(appointmentList.isEmpty())){
-                    printExpectedCredits();
-                } else {
-                    System.out.println("Schedule calendar is empty.");
-                }
+                printExpectedCredits();
                 break;
             default: // Command not recognized
                 System.out.println("Invalid command!");
@@ -442,7 +436,7 @@ public class ClinicManager {
     }
 
     private void outputInSortedOrder(char order, int apptType){
-        if (!(appointmentList.isEmpty())){
+        if (!(appointmentList.isEmpty()) && !listEmptied){
             Sort.appointment(appointmentList, order);
             switch (apptType){
                 case APPOINTMENT_TYPE_OFFICE:
@@ -667,6 +661,7 @@ public class ClinicManager {
      * @return a true or false boolean value depending on if the appointment was successfully added to list
      */
     boolean addAppointmentToList(Appointment appointment, int statusValue){
+        listEmptied = false;
         if(appointment instanceof Imaging){
             appointmentList.add(appointment);
             if (statusValue == BOOKED_VALUE){
@@ -762,26 +757,49 @@ public class ClinicManager {
     
     private void printBillingStatements() {
         if (!appointmentList.isEmpty()) {
+            listEmptied = true;
+            appointment(appointmentList, PATIENT_DATE_TIME);
+            int[] patientBills = new int[appointmentList.size()];
+            int[] patientHashCodeList = new int[appointmentList.size()];
+            Person[] patientList = new Person[appointmentList.size()];
             Iterator<Appointment> iterator = appointmentList.iterator();
-            Map<Person, Integer> patientBills = new HashMap<>();
-            
+            boolean found = false;
+            int idx = -1;
+            int size = 0;
             // Accumulate total billing amounts per patient
             while (iterator.hasNext()) {
+                found = false;
+                idx = -1;
                 Appointment appointment = iterator.next();
                 Person patient = appointment.getPatient();
                 Provider provider = (Provider) appointment.getProvider();
                 int billingAmount = provider.rate();
-                
-                // Accumulate the billing for each patient
-                patientBills.put(patient, patientBills.getOrDefault(patient, 0) + billingAmount);
+                for(int i = 0; i < appointmentList.size(); i++){
+                    if(patientHashCodeList[i] != 0){
+                        if(patientHashCodeList[i] == patient.hashCode()){
+                            found = true;
+                            idx = i;
+                        }
+                    }
+
+                }
+                if(found){
+                    patientBills[idx] = patientBills[idx] + billingAmount;
+                } else {
+                    patientList[size] = patient;
+                    patientHashCodeList[size] = patient.hashCode();
+                    patientBills[size] = billingAmount;
+                    size++;
+                }
+
             }
     
             // Printing the billing statements in the required format
             System.out.println("** Billing statement ordered by patient. **");
             int count = 1;
-            for (Map.Entry<Person, Integer> entry : patientBills.entrySet()) {
-                Person patient = entry.getKey();
-                int dueAmount = entry.getValue();
+            for (int i = 0; i < size; i++) {
+                Person patient = patientList[i];
+                int dueAmount = patientBills[i];
                 String profileInfo = patient.getProfile().toString(); // Assuming it returns "First Last DOB"
                 
                 System.out.printf("(%d) %s [due: $%.2f]%n", count++, profileInfo, (double) dueAmount);
@@ -795,36 +813,50 @@ public class ClinicManager {
 
     private void printExpectedCredits() {
         if (!appointmentList.isEmpty()) {
-            Map<Provider, Integer> providerCredits = new HashMap<>();
-    
+            listEmptied = true;
             // Use an iterator for the appointmentList
+            appointment(appointmentList, PROVIDER_NAME_DOB);
+            int[] providerCredits = new int[appointmentList.size()];
+            int[] providerHashCodeList = new int[appointmentList.size()];
+            Provider[] providerList = new Provider[appointmentList.size()];
             Iterator<Appointment> iterator = appointmentList.iterator();
+            boolean found = false;
+            int idx = -1;
+            int size = 0;
+            // Accumulate total billing amounts per provider
             while (iterator.hasNext()) {
+                found = false;
+                idx = -1;
                 Appointment appointment = iterator.next();
                 Provider provider = (Provider) appointment.getProvider();
-                int rate = provider.rate();
-    
-                // Accumulate the total credits
-                providerCredits.put(provider, providerCredits.getOrDefault(provider, 0) + rate);
+                int billingAmount = provider.rate();
+                for(int i = 0; i < appointmentList.size(); i++){
+                    if(providerHashCodeList[i] != 0){
+                        if(providerHashCodeList[i] == provider.hashCode()){
+                            found = true;
+                            idx = i;
+                        }
+                    }
+
+                }
+                if(found){
+                    providerCredits[idx] = providerCredits[idx] + billingAmount;
+                } else {
+                    providerList[size] = provider;
+                    providerHashCodeList[size] = provider.hashCode();
+                    providerCredits[size] = billingAmount;
+                    size++;
+                }
+
             }
-    
-            // Convert the providers to a list for sorting
-            List<Provider> providerList = new List<>();
-            for (Provider provider : providerCredits.keySet()) {
-                providerList.add(provider);
-            }
-    
-            // Sort the providers by profile using the existing sort method
-            Sort.provider(providerList);
-    
+
             // Print in the required format
             System.out.println("** Credit amount ordered by provider. **");
-            Iterator<Provider> providerIterator = providerList.iterator();
             int count = 1;
-            while (providerIterator.hasNext()) {
-                Provider provider = providerIterator.next();
-                String profileInfo = provider.getProfile().toString(); // Assuming it returns "First Last DOB"
-                int creditAmount = providerCredits.get(provider);
+            for (int i = 0; i < size; i++) {
+                Person patient = providerList[i];
+                int creditAmount = providerCredits[i];
+                String profileInfo = patient.getProfile().toString();
                 System.out.printf("(%d) %s [credit amount: $%.2f]%n", count++, profileInfo, (double) creditAmount);
             }
             System.out.println("** end of list **");

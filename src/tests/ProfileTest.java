@@ -1,3 +1,10 @@
+package tests;
+
+import clinic.Profile;
+import org.junit.Test;
+import util.Date;
+
+import static org.junit.Assert.assertEquals;
 
 public class ProfileTest {
 

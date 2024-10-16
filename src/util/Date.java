@@ -211,14 +211,13 @@ public class Date implements Comparable<Date> {
         return this.year == targetDate.year && this.month == targetDate.month && this.day == targetDate.day;
     }
 
-    /**
-     * Generates a hash code for this Date object.
-     *
-     * @return The hash code of the date.
-     */
     @Override
     public int hashCode() {
-        return 0;
-        // return Objects.hash(year, month, day);
+        int result = 17;
+        result = 31 * result + year;
+        result = 31 * result + month;
+        result = 31 * result + day;
+        return result;
     }
+
 }

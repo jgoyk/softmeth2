@@ -82,13 +82,5 @@ public class Imaging extends Appointment {
         return super.equals(otherImaging) && room == otherImaging.room;
     }
 
-    /**
-     * Generates a hash code for this imaging appointment.
-     *
-     * @return The hash code of the imaging appointment.
-     */
-    @Override
-    public int hashCode() {
-        return super.hashCode() + room.hashCode();
-    }
+
 }

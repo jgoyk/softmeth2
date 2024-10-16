@@ -26,16 +26,16 @@ public class Appointment implements Comparable<Appointment> {
     /**
      * Constructs an appointment with the specified date, timeslot, patient, and provider.
      *
-     * @param appointmentDate The date of the appointment.
-     * @param appointmentTimeslot The timeslot of the appointment.
-     * @param appointmentPatient The patient for the appointment.
-     * @param appointmentProvider The provider (doctor/technician) for the appointment.
+     * @param date The date of the appointment.
+     * @param timeslot The timeslot of the appointment.
+     * @param patient The patient for the appointment.
+     * @param provider The provider (doctor/technician) for the appointment.
      */
-    public Appointment(Date appointmentDate, Timeslot appointmentTimeslot, Person appointmentPatient, Person appointmentProvider) {
-        this.date = new Date(appointmentDate);
-        this.timeslot = appointmentTimeslot;
-        this.patient = appointmentPatient;
-        this.provider = appointmentProvider;
+    public Appointment(Date date, Timeslot timeslot, Person patient, Person provider) {
+        this.date = new Date(date);
+        this.timeslot = timeslot;
+        this.patient = patient;
+        this.provider = provider;
     }
 
     /**
@@ -137,14 +137,5 @@ public class Appointment implements Comparable<Appointment> {
                provider.equals(that.getProvider());
     }
 
-    /**
-     * Generates a hash code for this appointment.
-     *
-     * @return The hash code of the appointment.
-     */
-    @Override
-    public int hashCode() {
-        return 0;
-        //return Objects.hash(date, timeslot, patient, provider);
-    }
+
 }

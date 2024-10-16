@@ -14,7 +14,7 @@ public class Sort {
     public static final char DATE_TIME_PROVIDER_NAME = 'A'; //Used for PA Command
     public static final char PATIENT_DATE_TIME = 'P'; // Used for PP and PS commands
     public static final char COUNTY_DATE_TIME = 'L'; // Used for PL, PO, and PI commands
-
+    public static final char PROVIDER_NAME_DOB = 'N';
     /**
      * generalized selection sort for appointments based on key given
      * @param list to sort of appointments
@@ -65,6 +65,7 @@ public class Sort {
         int patientComparison = a1.getPatient().getProfile().compareTo(a2.getPatient().getProfile());
         Provider provider1 = (Provider)(a1.getProvider());
         Provider provider2 = (Provider)(a2.getProvider());
+        int providerComparison = provider1.compareTo(provider2);
         int countyComparison = provider1.getLocation().getCounty().compareTo(provider2.getLocation().getCounty());
 
         if (key == DATE_TIME_PROVIDER_NAME){
@@ -87,9 +88,9 @@ public class Sort {
             } else {
                 return patientComparison;
             }
+        } else if (key == PROVIDER_NAME_DOB){
+            return providerComparison;
         }
         return EQUAL;
     }
-
-
 }

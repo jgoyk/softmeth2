@@ -149,4 +149,13 @@ public class Profile implements Comparable<Profile> {
                 lastName.equalsIgnoreCase(targetProfile.getLastName()) &&
                 dateOfBirth.equals(targetProfile.getDateOfBirth());
     }
+
+    @Override
+    public int hashCode(){
+        int result = 17;
+        result = 31 * result + (firstName != null ? firstName.toLowerCase().hashCode() : 0);
+        result = 31 * result + (lastName != null ? lastName.toLowerCase().hashCode() : 0);
+        result = 31 * result + (dateOfBirth != null ? dateOfBirth.hashCode() : 0);
+        return result;
+    }
 }
