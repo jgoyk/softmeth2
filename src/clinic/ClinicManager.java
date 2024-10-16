@@ -750,64 +750,78 @@ public class ClinicManager {
         }
         return true;
     }
+    
     private void printBillingStatements() {
         if (!appointmentList.isEmpty()) {
             Iterator<Appointment> iterator = appointmentList.iterator();
+            Map<Person, Integer> patientBills = new HashMap<>();
+            
+            // Accumulate total billing amounts per patient
             while (iterator.hasNext()) {
                 Appointment appointment = iterator.next();
-                // Get patient and provider
                 Person patient = appointment.getPatient();
                 Provider provider = (Provider) appointment.getProvider();
-                // Use the rate() method to calculate billing
                 int billingAmount = provider.rate();
                 
-                // Print billing statement
-                System.out.println("Patient: " + patient.getProfile().toString());
-                System.out.println("Provider: " + provider.toString());
-                System.out.println("Billing Amount: $" + billingAmount);
-                System.out.println("------------------------------------");
+                // Accumulate the billing for each patient
+                patientBills.put(patient, patientBills.getOrDefault(patient, 0) + billingAmount);
             }
+    
+            // Printing the billing statements in the required format
+            System.out.println("** Billing statement ordered by patient. **");
+            int count = 1;
+            for (Map.Entry<Person, Integer> entry : patientBills.entrySet()) {
+                Person patient = entry.getKey();
+                int dueAmount = entry.getValue();
+                String profileInfo = patient.getProfile().toString(); // Assuming it returns "First Last DOB"
+                
+                System.out.printf("(%d) %s [due: $%.2f]%n", count++, profileInfo, (double) dueAmount);
+            }
+            System.out.println("** end of list **");
         } else {
             System.out.println("Schedule calendar is empty.");
         }
     }
+    
+
     private void printExpectedCredits() {
         if (!appointmentList.isEmpty()) {
-            // HashMap to store total credits for each provider
             Map<Provider, Integer> providerCredits = new HashMap<>();
-            
+    
             // Use an iterator for the appointmentList
             Iterator<Appointment> iterator = appointmentList.iterator();
             while (iterator.hasNext()) {
                 Appointment appointment = iterator.next();
                 Provider provider = (Provider) appointment.getProvider();
                 int rate = provider.rate();
-                
+    
                 // Accumulate the total credits
                 providerCredits.put(provider, providerCredits.getOrDefault(provider, 0) + rate);
             }
-            
+    
             // Convert the providers to a list for sorting
             List<Provider> providerList = new List<>();
             for (Provider provider : providerCredits.keySet()) {
                 providerList.add(provider);
             }
-            
-            // Sort the providers by profile using your existing sort method
+    
+            // Sort the providers by profile using the existing sort method
             Sort.provider(providerList);
-            
-            // Use an iterator for the sorted provider list
+    
+            // Print in the required format
+            System.out.println("** Credit amount ordered by provider. **");
             Iterator<Provider> providerIterator = providerList.iterator();
+            int count = 1;
             while (providerIterator.hasNext()) {
                 Provider provider = providerIterator.next();
-                System.out.println("Provider: " + provider.getProfile().toString());
-                System.out.println("Expected Credit: $" + providerCredits.get(provider));
-                System.out.println("------------------------------------");
+                String profileInfo = provider.getProfile().toString(); // Assuming it returns "First Last DOB"
+                int creditAmount = providerCredits.get(provider);
+                System.out.printf("(%d) %s [credit amount: $%.2f]%n", count++, profileInfo, (double) creditAmount);
             }
+            System.out.println("** end of list **");
         } else {
             System.out.println("Schedule calendar is empty.");
         }
     }
-
 }
 
