@@ -16,6 +16,9 @@ public class ListTest {
         Doctor doctor = new Doctor(new Profile("Alice", "Johnson", new Date("05/05/1980")), Location.values()[0], "12345", Specialty.values()[0]);
         Technician technician = new Technician(new Profile("Bob", "Williams", new Date("03/03/1975")), Location.values()[0], 100);
 
+        assertFalse(providerList.contains(doctor));
+        assertFalse(providerList.contains(technician));
+
         providerList.add(doctor);
         providerList.add(technician);
 
@@ -33,6 +36,9 @@ public class ListTest {
 
         providerList.add(doctor);
         providerList.add(technician);
+
+        assertTrue(providerList.contains(doctor));
+        assertTrue(providerList.contains(technician));
 
         // Remove the doctor and check
         providerList.remove(doctor);
