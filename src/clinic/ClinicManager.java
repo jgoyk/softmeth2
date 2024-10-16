@@ -90,10 +90,9 @@ public class ClinicManager {
      */
     public void run(){
         Scanner commandScanner = new Scanner(System.in);
-        System.out.println("Clinic Manager is running.");
 
         readProviderFile();
-
+        System.out.println("Clinic Manager is running...");
         while(programRunning){
             readCommand(commandScanner.nextLine());
         }
@@ -190,14 +189,24 @@ public class ClinicManager {
         }
         System.out.println("Rotation list for the technicians.");
         Node currNode = technicianList.getHead();
-        for(int i = technicianList.getSize()-1; i >= 0 ; i--){
-            System.out.print(currNode.getTechnician().toString());
-            if (i != 0){
+        for (int i = technicianList.getSize() - 1; i >= 0; i--) {
+            Technician technician = currNode.getTechnician();
+            String name = technician.getProfile().getFirstName() + " " + technician.getProfile().getLastName();
+            
+            // Assuming Location has a method like getName() or a proper toString() to extract the city
+            String location = technician.getLocation().toString(); // Adjust this to whatever method gives you the city
+        
+            // Print the technician's name and location
+            System.out.print(name + " (" + location + ")");
+        
+            if (i != 0) {
                 System.out.print(" --> ");
             }
+        
             currNode = currNode.getNext();
         }
         System.out.println();
+        
 
     }
 
@@ -706,7 +715,7 @@ public class ClinicManager {
                 return false;
             }
             if (apptToCheck.getPatient().equals(appointment.getPatient()) && apptToCheck.getTimeslot().equals(appointment.getTimeslot()) && apptToCheck.getDate().equals(appointment.getDate())){
-                System.out.println(appointment.getPatient().toString() + " has an existing appointment at the same time slot.");
+                System.out.println(appointment.getPatient().toString() + " has an existing appointment at "+appointment.getDate().toString()+" "+appointment.getTimeslot().toString());
                 return false;
             }
         }
