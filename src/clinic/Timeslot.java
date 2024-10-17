@@ -33,7 +33,13 @@ public class Timeslot implements Comparable<Timeslot> {
         this.hour = hour;
         this.minute = minute;
     }
-
+    /**
+     * Constructs a Timeslot object based on a given timeslot value.
+     * @param timeslotValue The integer value representing the timeslot, where:
+     *                      - Values > 6 represent times in the afternoon (1:00 PM and later).
+     *                      - Values between 1 and 6 represent morning times (9:00 AM to 12:30 PM).
+     *                      - Values ≤ 0 are considered invalid.
+     */
     public Timeslot(int timeslotValue) {
         if(timeslotValue > 6){
             this.hour = (timeslotValue-5) / 2 + 13;
@@ -89,7 +95,16 @@ public class Timeslot implements Comparable<Timeslot> {
 
         return String.format("%d:%02d %s", displayHour, minute, period);
     }
-
+    /**
+     * Converts the hour and minute of this Timeslot into a corresponding integer timeslot value.
+     *
+     * - If the hour is 13 or greater (1:00 PM or later), the timeslot value starts at 5 and increments by 2 for each hour.
+     * - If the hour is between 9 and 12 (morning), the timeslot value starts at 1 and increments by 2 for each hour.
+     * - If the minute is 30 or greater, 1 is added to the timeslot value to represent the half-hour slot.
+     * - If the hour is less than 9 or greater than 24, the method returns -1 indicating an invalid timeslot.
+     *
+     * @return The timeslot value representing the hour and minute, or -1 if the time is invalid.
+     */
     public int getTimeslotInt(){
         int timeslotValue;
 

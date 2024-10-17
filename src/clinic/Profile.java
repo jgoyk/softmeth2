@@ -149,7 +149,10 @@ public class Profile implements Comparable<Profile> {
                 lastName.equalsIgnoreCase(targetProfile.getLastName()) &&
                 dateOfBirth.equals(targetProfile.getDateOfBirth());
     }
-
+    /**
+     * Generates a hash code for this object using its first name, last name, and date of birth.
+     * @return an integer hash code representing the object based on its first name, last name, and date of birth.
+     */
     @Override
     public int hashCode(){
         int result = 17;
